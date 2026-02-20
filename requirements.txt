@@ -1,0 +1,30 @@
+# --- Core Framework ---
+langchain>=0.2.0
+langgraph>=0.0.50          # Stateful Graph Orchestration
+langchain-community
+langchain-core
+
+# --- LLM Providers ---
+langchain-groq             # Llama 3.3 via Groq API
+
+# --- Embeddings ---
+sentence-transformers      # HuggingFace Embeddings (all-MiniLM-L6-v2)
+langchain-huggingface
+torch                      # GPU acceleration
+
+# --- Data Science Tools ---
+pandas
+numpy
+matplotlib
+seaborn
+tabulate                   # Pretty printing tables
+openpyxl                   # Excel file support
+
+# --- Web Server (React UI Backend) ---
+fastapi                    # REST API server
+uvicorn                    # ASGI server for FastAPI
+python-multipart           # File upload support for FastAPI
+
+# --- Utilities ---
+python-dotenv              # .env file loading
+pydantic                   # Structured Output Parsing
