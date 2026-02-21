@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# Node
+frontend/node_modules
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+aianalyst/
+
+# Environment (secrets — pass via env vars at runtime)
+.env
+
+# Data files
+data/
+
+# IDE
+.vscode
+.idea
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Misc
+*.md
+output*.png
+test_*.csv
