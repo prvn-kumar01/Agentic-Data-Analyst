@@ -13,6 +13,9 @@
 [![Llama 3.3](https://img.shields.io/badge/Llama_3.3-70B-7950F2?style=for-the-badge&logo=meta&logoColor=white)](https://groq.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://agentic-data-analyst-ixxo.onrender.com)
+
+🔗 **[Try the Live Demo →](https://agentic-data-analyst-ixxo.onrender.com)**
 
 <br/>
 
@@ -206,6 +209,8 @@ python main.py
 ---
 
 ## 🐳 Docker Deployment
+
+> 🌐 **Live on Render** — [https://agentic-data-analyst-ixxo.onrender.com](https://agentic-data-analyst-ixxo.onrender.com)
 
 Deploy the entire stack with a single command:
 
