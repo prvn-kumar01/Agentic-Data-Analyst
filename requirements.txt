@@ -20,7 +20,8 @@ seaborn
 tabulate                   # Pretty printing tables
 openpyxl                   # Excel file support
 
-# --- Web Server (React UI Backend) ---
+# --- Web UI & API Server ---
+streamlit                  # Streamlit frontend UI
 fastapi                    # REST API server
 uvicorn                    # ASGI server for FastAPI
 python-multipart           # File upload support for FastAPI
@@ -28,3 +29,4 @@ python-multipart           # File upload support for FastAPI
 # --- Utilities ---
 python-dotenv              # .env file loading
 pydantic                   # Structured Output Parsing
+requests                   # HTTP requests (Streamlit → FastAPI)

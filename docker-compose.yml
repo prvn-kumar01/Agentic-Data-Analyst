@@ -5,7 +5,8 @@ services:
     build: .
     container_name: auto-analyst-ai
     ports:
-      - "80:80"
+      - "8501:8501"
+      - "8000:8000"
     env_file:
       - .env
     environment:

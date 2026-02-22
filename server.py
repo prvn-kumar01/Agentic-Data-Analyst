@@ -1,6 +1,6 @@
 """
 Auto-Analyst AI — FastAPI Backend Server
-REST API wrapping the LangGraph agent for the React frontend.
+REST API wrapping the LangGraph agent for the Streamlit frontend.
 
 Endpoints:
     POST /api/upload    — Upload CSV, get data preview
@@ -20,7 +20,6 @@ from io import StringIO
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 import uvicorn
 
 # Ensure project root is importable
@@ -37,10 +36,10 @@ api = FastAPI(
     version="1.0.0"
 )
 
-# CORS — Allow React dev server
+# CORS — Allow Streamlit
 api.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "*"],
+    allow_origins=["http://localhost:8501", "http://127.0.0.1:8501", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,8 +47,9 @@ api.add_middleware(
 
 # Directories
 UPLOAD_DIR = os.path.join("data", "input")
-CHART_DIR = "."  # Charts are saved in project root by the agent
+CHART_DIR = os.path.join("data", "output")  # Charts are saved in data/output by the agent
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(CHART_DIR, exist_ok=True)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -114,7 +114,7 @@ async def analyze_data(
         )
     
     # Clean old charts
-    for f in glob.glob("output*.png"):
+    for f in glob.glob(os.path.join(CHART_DIR, "output*.png")):
         try:
             os.remove(f)
         except OSError:
@@ -151,7 +151,7 @@ async def analyze_data(
                 node_log.append(entry)
         
         # Collect charts
-        charts = sorted(glob.glob("output*.png"))
+        charts = sorted(glob.glob(os.path.join(CHART_DIR, "output*.png")))
         chart_urls = [f"/api/charts/{os.path.basename(c)}" for c in charts]
         
         return {

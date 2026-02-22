@@ -55,7 +55,7 @@ CRITICAL RULES:
 
 CHART GENERATION (IMPORTANT — create MULTIPLE charts):
 - Create a figure with 2x2 or 2x3 subplots using: fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-- Or create 4-5 SEPARATE charts saved as: output_1.png, output_2.png, output_3.png, output_4.png, output_5.png
+- Or create 4-5 SEPARATE charts saved as: data/output/output_1.png, data/output/output_2.png, data/output/output_3.png, data/output/output_4.png, data/output/output_5.png
 - Each chart should have a clear title, axis labels, and use different colors/palettes.
 - Use plt.tight_layout() before saving.
 - Always call plt.close() after saving each figure.
@@ -77,7 +77,7 @@ USER QUERY: "{query}"
 ANALYSIS RESULT (From Code Execution):
 {code_output}
 
-NOTE: Multiple charts have been generated (output_1.png through output_5.png).
+NOTE: Multiple charts have been generated (data/output/output_1.png through data/output/output_5.png).
 
 YOUR TASK:
 1. Summarize ALL findings based on the code output in clear, simple language.

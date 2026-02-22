@@ -7,7 +7,7 @@
 *Upload a CSV. Ask a question. Get insights, charts, and code — all powered by AI.*
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Framework-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
 [![Llama 3.3](https://img.shields.io/badge/Llama_3.3-70B-7950F2?style=for-the-badge&logo=meta&logoColor=white)](https://groq.com)
@@ -55,15 +55,16 @@
 - Generates **4–5 publication-quality visualizations** per query
 - Seaborn + Matplotlib with beautiful color palettes
 - Distribution, correlation, comparison, and ranking charts
+- All charts saved to `data/output/` for easy access
 
-### 🎨 Modern React Frontend
-- **React 19** + **Vite** for instant dev experience
-- Drag-and-drop CSV upload with data preview
+### 🎨 Streamlit Frontend
+- **Interactive web UI** powered by Streamlit
+- CSV upload with data preview
 - Real-time pipeline status tracking
-- Interactive chart gallery and code viewer
+- Chart gallery and AI-generated insight display
 
 ### 🐳 One-Command Deployment
-- Multi-stage Docker build (Node + Python + Nginx)
+- Single Docker image (FastAPI + Streamlit + Supervisord)
 - `docker-compose up` and you're live
 - Production-ready with health checks
 
@@ -80,7 +81,7 @@
 │                         AUTO-ANALYST AI                                │
 ├──────────────────────────────┬──────────────────────────────────────────┤
 │        FRONTEND              │              BACKEND                    │
-│   React 19 + Vite            │          FastAPI + LangGraph            │
+│   Streamlit (Port 8501)      │         FastAPI + LangGraph             │
 │                              │                                        │
 │  ┌────────────────────┐      │   ┌──────────────────────────────────┐  │
 │  │  📂 File Upload    │──────┼──▶│  POST /api/upload                │  │
@@ -121,7 +122,7 @@ graph LR
 | **1** | 🕵️ **Profiler** | Loads the CSV, extracts schema, generates a statistical summary |
 | **2** | 🧠 **Planner** | Creates a multi-step analysis plan covering distributions, comparisons, correlations |
 | **3** | ⌨️ **Generator** | Writes Python code (Pandas + Matplotlib + Seaborn) to execute the plan |
-| **4** | ⚙️ **Executor** | Runs code in a secure sandbox, captures stdout and generated charts |
+| **4** | ⚙️ **Executor** | Runs code in a secure sandbox, captures stdout and saves charts to `data/output/` |
 | **5** | 📊 **Insight** | Summarizes all findings in plain English for non-technical audiences |
 
 > 🔄 **Self-Correcting**: If code execution fails, the agent reflects on the error and regenerates fixed code — up to 3 attempts.
@@ -133,15 +134,14 @@ graph LR
 <div align="center">
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
+|-------|-----------|---------| 
 | **LLM** | Llama 3.3 70B (via Groq) | Reasoning, planning, code generation |
 | **Agent Framework** | LangGraph | Stateful graph orchestration with conditional edges |
 | **Backend API** | FastAPI + Uvicorn | REST API for upload, analysis, and chart serving |
-| **Frontend** | React 19 + Vite | Modern, responsive single-page application |
+| **Frontend** | Streamlit | Interactive web UI with drag-and-drop uploads |
 | **Data Science** | Pandas, NumPy, Matplotlib, Seaborn | Data manipulation and visualization |
-| **Embeddings** | HuggingFace (all-MiniLM-L6-v2) | Semantic similarity (GPU-accelerated) |
 | **Structured Output** | Pydantic + LangChain JsonOutputParser | Type-safe LLM responses |
-| **Deployment** | Docker + Nginx + Supervisord | Production-ready containerization |
+| **Deployment** | Docker + Supervisord | Production-ready containerization |
 
 </div>
 
@@ -152,7 +152,6 @@ graph LR
 ### Prerequisites
 
 - **Python 3.11+**
-- **Node.js 18+** (for frontend)
 - **Groq API Key** — [Get one free at groq.com](https://console.groq.com/keys)
 
 ### 1️⃣ Clone the Repository
@@ -170,7 +169,7 @@ Create a `.env` file in the project root:
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### 3️⃣ Install Backend Dependencies
+### 3️⃣ Install Dependencies
 
 ```bash
 # Create virtual environment (recommended)
@@ -182,34 +181,27 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
-### 4️⃣ Install Frontend Dependencies
+### 4️⃣ Run the Application
 
-```bash
-cd frontend
-npm install
-cd ..
-```
-
-### 5️⃣ Run the Application
-
-**Option A — Full-Stack (React + API):**
+**Option A — Full-Stack (Streamlit + FastAPI):**
 
 ```bash
 # Terminal 1: Start the FastAPI backend
 python server.py
 
-# Terminal 2: Start the React frontend
-cd frontend
-npm run dev
+# Terminal 2: Start the Streamlit frontend
+streamlit run streamlit_app.py
 ```
 
-Then open **http://localhost:5173** in your browser.
+Then open **http://localhost:8501** in your browser.
 
 **Option B — CLI Mode (No UI):**
 
 ```bash
 python main.py
 ```
+
+> 📁 All generated charts are saved to `data/output/` directory.
 
 ---
 
@@ -222,12 +214,12 @@ Deploy the entire stack with a single command:
 docker-compose up --build
 
 # Access the app
-open http://localhost
+open http://localhost:8501
 ```
 
-The Docker setup uses a **multi-stage build**:
-1. **Stage 1**: Builds the React frontend with Node.js
-2. **Stage 2**: Sets up Python runtime + Nginx reverse proxy + Supervisord process manager
+The Docker setup runs **Streamlit + FastAPI** in a single container using **Supervisord** as the process manager:
+- **Streamlit UI** → Port `8501`
+- **FastAPI API** → Port `8000`
 
 ---
 
@@ -240,6 +232,7 @@ Auto-Analyst-AI/
 │   ├── server.py              # FastAPI REST API server
 │   ├── main.py                # CLI entry point
 │   ├── config.py              # LLM & embedding configuration
+│   ├── streamlit_app.py       # Streamlit web UI
 │   └── src/
 │       ├── graph.py           # LangGraph workflow definition
 │       ├── nodes.py           # 5 agent nodes (profiler → insight)
@@ -249,25 +242,15 @@ Auto-Analyst-AI/
 │       ├── tools.py           # Sandboxed code execution engine
 │       └── utils.py           # CSV profiling utilities
 │
-├── ⚛️ Frontend (React)
-│   └── frontend/
-│       ├── src/
-│       │   ├── App.jsx        # Main application shell
-│       │   ├── index.css      # Global styles
-│       │   └── components/
-│       │       ├── FileUpload.jsx      # Drag-and-drop CSV upload
-│       │       ├── QueryInput.jsx      # Natural language query input
-│       │       ├── PipelineStatus.jsx  # Real-time agent progress
-│       │       ├── ChartGallery.jsx    # Visualization gallery
-│       │       ├── CodePanel.jsx       # Generated code viewer
-│       │       └── InsightPanel.jsx    # AI-generated insights
-│       └── vite.config.js     # Vite configuration
+├── 📂 Data
+│   └── data/
+│       ├── input/             # Uploaded CSV files
+│       └── output/            # Generated charts (output_1.png, etc.)
 │
 ├── 🐳 Deployment
-│   ├── Dockerfile             # Multi-stage build
+│   ├── Dockerfile             # Single-stage Python build
 │   ├── docker-compose.yml     # One-command deployment
-│   ├── nginx.conf             # Reverse proxy config
-│   └── supervisord.conf       # Process manager config
+│   └── supervisord.conf       # Process manager (FastAPI + Streamlit)
 │
 ├── requirements.txt           # Python dependencies
 └── .env                       # API keys (not committed)
@@ -281,7 +264,7 @@ Auto-Analyst-AI/
 |--------|----------|-------------|
 | `POST` | `/api/upload` | Upload a CSV file, returns data preview with column metadata |
 | `POST` | `/api/analyze` | Run the full agent pipeline, returns insights + chart URLs + code |
-| `GET` | `/api/charts/{filename}` | Serve a generated chart image |
+| `GET` | `/api/charts/{filename}` | Serve a generated chart image from `data/output/` |
 | `GET` | `/api/health` | Health check endpoint |
 
 <details>
@@ -329,7 +312,7 @@ Here's what happens under the hood when you ask *"What are the sales trends by r
    → Creates 4 subplots with seaborn styling
 
 4. ⚙️ EXECUTOR
-   → Runs code in sandbox → Captures 4 charts + summary stats
+   → Runs code in sandbox → Saves 4 charts to data/output/ + captures stats
 
 5. 📊 INSIGHT
    → "The Western region leads with $2.3M in total sales,

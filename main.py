@@ -64,11 +64,14 @@ def print_result(final_state: dict):
         else:
             print("\n⚠️ No insights were generated.")
     
-    # Show Image Path
-    image_path = final_state.get("image_path", "output.png")
-    if os.path.exists(image_path):
-        abs_path = os.path.abspath(image_path)
-        print(f"\n📈 Chart saved at: {abs_path}")
+    # Show Image Paths
+    import glob
+    chart_dir = os.path.join("data", "output")
+    charts = sorted(glob.glob(os.path.join(chart_dir, "output*.png")))
+    if charts:
+        print(f"\n📈 Charts saved in: {os.path.abspath(chart_dir)}")
+        for chart in charts:
+            print(f"   • {os.path.basename(chart)}")
     
     # Show Code (truncated)
     code = final_state.get("python_code")

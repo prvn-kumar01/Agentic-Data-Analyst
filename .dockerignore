@@ -2,8 +2,6 @@
 .git
 .gitignore
 
-# Node
-frontend/node_modules
 
 # Python
 __pycache__

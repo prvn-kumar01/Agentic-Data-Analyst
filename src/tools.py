@@ -35,7 +35,7 @@ def _strip_imports(code: str) -> str:
     return '\n'.join(cleaned_lines)
 
 
-def _cleanup_old_charts(output_dir: str = "."):
+def _cleanup_old_charts(output_dir: str = os.path.join("data", "output")):
     """Remove previous output charts before a new run."""
     for f in glob.glob(os.path.join(output_dir, "output*.png")):
         try:
@@ -44,7 +44,7 @@ def _cleanup_old_charts(output_dir: str = "."):
             pass
 
 
-def _find_generated_charts(output_dir: str = ".") -> list:
+def _find_generated_charts(output_dir: str = os.path.join("data", "output")) -> list:
     """Find all output chart files generated during execution."""
     patterns = ["output.png", "output_*.png"]
     charts = []
@@ -77,8 +77,10 @@ def execute_python_code(code: str, csv_path: str, output_image: str = "output.pn
                 "error": f"Security Alert: Forbidden pattern '{pattern}' detected!"
             }
 
-    # 2. CLEANUP OLD CHARTS
-    _cleanup_old_charts()
+    # 2. ENSURE OUTPUT DIRECTORY EXISTS & CLEANUP OLD CHARTS
+    output_dir = os.path.join("data", "output")
+    os.makedirs(output_dir, exist_ok=True)
+    _cleanup_old_charts(output_dir)
 
     # 3. CAPTURE STDOUT
     old_stdout = sys.stdout
@@ -116,7 +118,7 @@ def execute_python_code(code: str, csv_path: str, output_image: str = "output.pn
         output = redirected_output.getvalue()
         
         # 8. FIND ALL GENERATED CHARTS
-        charts = _find_generated_charts()
+        charts = _find_generated_charts(output_dir)
         
         return {
             "success": True, 
@@ -132,5 +134,5 @@ def execute_python_code(code: str, csv_path: str, output_image: str = "output.pn
         return {
             "success": False, 
             "error": f"{clean_error}\n\nFull Traceback:\n{error_msg}",
-            "all_charts": _find_generated_charts()  # Some charts may have been saved before error
+            "all_charts": _find_generated_charts(output_dir)  # Some charts may have been saved before error
         }
