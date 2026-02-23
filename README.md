@@ -11,6 +11,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Framework-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
 [![Llama 3.3](https://img.shields.io/badge/Llama_3.3-70B-7950F2?style=for-the-badge&logo=meta&logoColor=white)](https://groq.com)
+[![HuggingFace](https://img.shields.io/badge/HuggingFace-Embeddings-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co)
 [![LangSmith](https://img.shields.io/badge/LangSmith-Tracing-FF6F00?style=for-the-badge&logo=langchain&logoColor=white)](https://smith.langchain.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
@@ -27,16 +28,6 @@
 > 💡 *"Show me the top 10 products by revenue and their trend over time"*
 > → The agent profiles your data, plans the analysis, writes Python code, executes it in a sandbox, generates multiple charts, and delivers a polished summary.
 
-</div>
-
----
-
-## 📸 App Preview
-
-<div align="center">
-  <img src="assets/app_screenshot.png" alt="Auto-Analyst AI — Streamlit Dashboard" width="900"/>
-  <br/>
-  <em>Premium dark-themed dashboard with CSV upload, real-time pipeline tracking, and AI-powered insights</em>
 </div>
 
 ---
@@ -157,7 +148,7 @@ graph LR
 | **Frontend** | Streamlit | Interactive web UI with drag-and-drop uploads |
 | **Data Science** | Pandas, NumPy, Matplotlib, Seaborn | Data manipulation and visualization |
 | **Structured Output** | Pydantic + LangChain JsonOutputParser | Type-safe LLM responses |
-| **Embeddings** | HuggingFace (all-MiniLM-L6-v2) | Sentence embeddings with GPU/CPU auto-detection |
+| **Embeddings** | HuggingFace (all-MiniLM-L6-v2) | Sentence embeddings via HuggingFace API |
 | **Deployment** | Docker + Supervisord | Production-ready containerization |
 
 </div>
@@ -170,6 +161,7 @@ graph LR
 
 - **Python 3.11+**
 - **Groq API Key** — [Get one free at groq.com](https://console.groq.com/keys)
+- **HuggingFace API Key** — [Get one free at huggingface.co](https://huggingface.co/settings/tokens)
 - *(Optional)* **LangSmith API Key** — [Get one at smith.langchain.com](https://smith.langchain.com) for agent tracing
 
 ### 1️⃣ Clone the Repository
@@ -185,6 +177,7 @@ Create a `.env` file in the project root:
 
 ```env
 GROQ_API_KEY=your_groq_api_key_here
+HUGGINGFACE_API_KEY=your_huggingface_api_key_here
 
 # Optional: Enable LangSmith Tracing
 LANGCHAIN_TRACING_V2=true
@@ -276,9 +269,7 @@ Auto-Analyst-AI/
 │   ├── docker-compose.yml     # One-command deployment
 │   └── supervisord.conf       # Process manager (FastAPI + Streamlit)
 │
-├── 🎨 Assets
-│   └── assets/                # Screenshots & media for README
-│
+
 ├── requirements.txt           # Python dependencies
 ├── .env                       # API keys (not committed)
 └── .gitignore                 # Git ignore rules
