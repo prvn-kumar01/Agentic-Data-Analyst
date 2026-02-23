@@ -47,7 +47,7 @@ api.add_middleware(
 
 # Directories
 UPLOAD_DIR = os.path.join("data", "input")
-CHART_DIR = os.path.join("data", "output")  # Charts are saved in data/output by the agent
+CHART_DIR = os.path.join("data", "output")  
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(CHART_DIR, exist_ok=True)
 
