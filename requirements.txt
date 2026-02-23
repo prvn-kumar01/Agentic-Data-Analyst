@@ -8,7 +8,9 @@ langchain-core
 langchain-groq             # Llama 3.3 via Groq API
 
 # --- Embeddings ---
-langchain-community        # HuggingFace Inference API Embeddings (cloud)
+sentence-transformers      # HuggingFace Embeddings (all-MiniLM-L6-v2)
+langchain-huggingface
+torch                      
 
 # --- Data Science Tools ---
 pandas
