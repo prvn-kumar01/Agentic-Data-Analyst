@@ -11,6 +11,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Framework-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
 [![Llama 3.3](https://img.shields.io/badge/Llama_3.3-70B-7950F2?style=for-the-badge&logo=meta&logoColor=white)](https://groq.com)
+[![LangSmith](https://img.shields.io/badge/LangSmith-Tracing-FF6F00?style=for-the-badge&logo=langchain&logoColor=white)](https://smith.langchain.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://agentic-data-analyst-ixxo.onrender.com)
@@ -30,6 +31,16 @@
 
 ---
 
+## 📸 App Preview
+
+<div align="center">
+  <img src="assets/app_screenshot.png" alt="Auto-Analyst AI — Streamlit Dashboard" width="900"/>
+  <br/>
+  <em>Premium dark-themed dashboard with CSV upload, real-time pipeline tracking, and AI-powered insights</em>
+</div>
+
+---
+
 ## ✨ Key Features
 
 <table>
@@ -44,7 +55,7 @@
 ### ⚡ Blazing Fast Inference
 - Powered by **Llama 3.3 70B** via **Groq API**
 - Sub-second LLM response times
-- Separate models for planning (creative) vs coding (deterministic)
+- Separate temperature configs for planning (creative) vs coding (deterministic)
 
 ### 🔒 Secure Code Execution
 - Sandboxed `exec()` with restricted builtins
@@ -60,11 +71,12 @@
 - Distribution, correlation, comparison, and ranking charts
 - All charts saved to `data/output/` for easy access
 
-### 🎨 Streamlit Frontend
-- **Interactive web UI** powered by Streamlit
-- CSV upload with data preview
-- Real-time pipeline status tracking
-- Chart gallery and AI-generated insight display
+### 🎨 Premium Streamlit Frontend
+- **Interactive web UI** with glassmorphism dark theme
+- Drag-and-drop CSV upload with instant data preview
+- Real-time pipeline status tracking with animated steps
+- Chart gallery, code panel, and AI-generated insight display
+- Quick prompt suggestions for common analysis types
 
 ### 🐳 One-Command Deployment
 - Single Docker image (FastAPI + Streamlit + Supervisord)
@@ -137,13 +149,15 @@ graph LR
 <div align="center">
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------| 
+|-------|-----------|---------|
 | **LLM** | Llama 3.3 70B (via Groq) | Reasoning, planning, code generation |
 | **Agent Framework** | LangGraph | Stateful graph orchestration with conditional edges |
+| **Observability** | LangSmith | End-to-end agent tracing & debugging |
 | **Backend API** | FastAPI + Uvicorn | REST API for upload, analysis, and chart serving |
 | **Frontend** | Streamlit | Interactive web UI with drag-and-drop uploads |
 | **Data Science** | Pandas, NumPy, Matplotlib, Seaborn | Data manipulation and visualization |
 | **Structured Output** | Pydantic + LangChain JsonOutputParser | Type-safe LLM responses |
+| **Embeddings** | HuggingFace (all-MiniLM-L6-v2) | Sentence embeddings with GPU/CPU auto-detection |
 | **Deployment** | Docker + Supervisord | Production-ready containerization |
 
 </div>
@@ -156,6 +170,7 @@ graph LR
 
 - **Python 3.11+**
 - **Groq API Key** — [Get one free at groq.com](https://console.groq.com/keys)
+- *(Optional)* **LangSmith API Key** — [Get one at smith.langchain.com](https://smith.langchain.com) for agent tracing
 
 ### 1️⃣ Clone the Repository
 
@@ -170,6 +185,10 @@ Create a `.env` file in the project root:
 
 ```env
 GROQ_API_KEY=your_groq_api_key_here
+
+# Optional: Enable LangSmith Tracing
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=your_langsmith_api_key_here
 ```
 
 ### 3️⃣ Install Dependencies
@@ -235,9 +254,9 @@ Auto-Analyst-AI/
 │
 ├── 🐍 Backend (Python)
 │   ├── server.py              # FastAPI REST API server
-│   ├── main.py                # CLI entry point
-│   ├── config.py              # LLM & embedding configuration
-│   ├── streamlit_app.py       # Streamlit web UI
+│   ├── main.py                # CLI entry point (interactive mode)
+│   ├── config.py              # LLM & embedding configuration (Groq + HuggingFace)
+│   ├── streamlit_app.py       # Streamlit web UI (premium dark theme)
 │   └── src/
 │       ├── graph.py           # LangGraph workflow definition
 │       ├── nodes.py           # 5 agent nodes (profiler → insight)
@@ -253,12 +272,16 @@ Auto-Analyst-AI/
 │       └── output/            # Generated charts (output_1.png, etc.)
 │
 ├── 🐳 Deployment
-│   ├── Dockerfile             # Single-stage Python build
+│   ├── Dockerfile             # Single-stage Python 3.11 build
 │   ├── docker-compose.yml     # One-command deployment
 │   └── supervisord.conf       # Process manager (FastAPI + Streamlit)
 │
+├── 🎨 Assets
+│   └── assets/                # Screenshots & media for README
+│
 ├── requirements.txt           # Python dependencies
-└── .env                       # API keys (not committed)
+├── .env                       # API keys (not committed)
+└── .gitignore                 # Git ignore rules
 ```
 
 ---
@@ -271,6 +294,8 @@ Auto-Analyst-AI/
 | `POST` | `/api/analyze` | Run the full agent pipeline, returns insights + chart URLs + code |
 | `GET` | `/api/charts/{filename}` | Serve a generated chart image from `data/output/` |
 | `GET` | `/api/health` | Health check endpoint |
+
+> 📖 **Interactive API Docs**: Visit `http://localhost:8000/docs` for Swagger UI when the server is running.
 
 <details>
 <summary><strong>📋 Example: Analyze Endpoint Response</strong></summary>
@@ -305,14 +330,14 @@ Here's what happens under the hood when you ask *"What are the sales trends by r
    → Reads CSV, detects 12 columns, 50,000 rows
    → Identifies: Region (categorical), Sales (numeric), Date (datetime)
 
-2. 🧠 PLANNER
+2. 🧠 PLANNER  (temperature=0.2 — creative reasoning)
    → Step 1: Load and clean data
    → Step 2: Group by Region, calculate total sales
    → Step 3: Plot time-series trends per region
    → Step 4: Create a heatmap of region × month
    → Step 5: Show top/bottom performing regions
 
-3. ⌨️ GENERATOR
+3. ⌨️ GENERATOR  (temperature=0 — deterministic coding)
    → Writes ~80 lines of Pandas + Matplotlib code
    → Creates 4 subplots with seaborn styling
 
@@ -336,6 +361,19 @@ The code execution engine includes multiple layers of protection:
 - ✅ **Pattern Blocking** — `subprocess`, `shutil`, `importlib`, `__import__` are blocked
 - ✅ **Isolated Scope** — Code runs in a separate namespace, not the main process
 - ✅ **Output Capture** — Stdout is redirected and captured safely
+
+---
+
+## 📡 Observability with LangSmith
+
+Auto-Analyst AI supports **LangSmith tracing** out of the box for full agent observability:
+
+- 🔍 **End-to-end trace** of every LLM call across all 5 pipeline nodes
+- 📊 **Token usage** and latency metrics per node
+- 🐛 **Debug failed runs** by inspecting exact prompts and responses
+- 📈 **Monitor production** performance over time
+
+Enable tracing by setting `LANGCHAIN_TRACING_V2=true` and providing your `LANGCHAIN_API_KEY` in the `.env` file.
 
 ---
 
