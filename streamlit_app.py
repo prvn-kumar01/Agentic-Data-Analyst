@@ -33,48 +33,93 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── Root Variables ── */
-:root {
-    --bg-primary: #060610;
-    --bg-secondary: #0d0d1a;
-    --bg-tertiary: #141425;
-    --bg-card: #1a1a2e;
-    --bg-card-hover: #1f1f38;
-    --bg-glass: rgba(20, 20, 37, 0.65);
-    --border-color: rgba(102, 126, 234, 0.12);
-    --border-hover: rgba(102, 126, 234, 0.35);
-    --border-active: rgba(102, 126, 234, 0.6);
-    --text-primary: #eaeaf2;
-    --text-secondary: #9090ab;
-    --text-muted: #555570;
-    --text-dim: #3a3a52;
-    --accent-1: #667eea;
-    --accent-2: #764ba2;
-    --accent-3: #f093fb;
-    --accent-4: #4facfe;
-    --gradient-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-warm: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --gradient-cool: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --gradient-subtle: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+/* ── Dark Theme (default) ── */
+:root, [data-theme="dark"] {
+    --bg-primary: #0b0d17;
+    --bg-secondary: #111827;
+    --bg-tertiary: #1e2235;
+    --bg-card: #1a1f36;
+    --bg-card-hover: #252b45;
+    --bg-glass: rgba(17, 24, 39, 0.72);
+    --border-color: rgba(99, 102, 241, 0.15);
+    --border-hover: rgba(99, 102, 241, 0.4);
+    --border-active: rgba(99, 102, 241, 0.65);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-dim: #475569;
+    --accent-1: #6366f1;
+    --accent-2: #8b5cf6;
+    --accent-3: #ec4899;
+    --accent-4: #22d3ee;
+    --gradient-main: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+    --gradient-warm: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+    --gradient-cool: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+    --gradient-subtle: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.12) 100%);
+    --gradient-hero: linear-gradient(135deg, #6366f1 0%, #8b5cf6 30%, #ec4899 60%, #22d3ee 100%);
     --success: #34d399;
-    --success-bg: rgba(52, 211, 153, 0.08);
+    --success-bg: rgba(52, 211, 153, 0.1);
     --warning: #fbbf24;
     --error: #f87171;
-    --error-bg: rgba(248, 113, 113, 0.08);
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
-    --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.45);
-    --shadow-glow: 0 0 40px rgba(102,126,234,0.12);
-    --radius-sm: 8px;
+    --error-bg: rgba(248, 113, 113, 0.1);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+    --shadow-glow: 0 0 50px rgba(99,102,241,0.15);
+    --radius-sm: 10px;
     --radius-md: 14px;
     --radius-lg: 20px;
     --radius-xl: 24px;
+    --ambient-1: rgba(99,102,241,0.07);
+    --ambient-2: rgba(139,92,246,0.06);
+    --ambient-3: rgba(34,211,238,0.04);
+    --ambient-4: rgba(236,72,153,0.04);
+}
+
+/* ── Light Theme ── */
+[data-theme="light"] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-tertiary: #e2e8f0;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --bg-glass: rgba(255, 255, 255, 0.78);
+    --border-color: rgba(79, 70, 229, 0.12);
+    --border-hover: rgba(79, 70, 229, 0.3);
+    --border-active: rgba(79, 70, 229, 0.55);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --accent-1: #4f46e5;
+    --accent-2: #7c3aed;
+    --accent-3: #db2777;
+    --accent-4: #0d9488;
+    --gradient-main: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+    --gradient-warm: linear-gradient(135deg, #db2777 0%, #e11d48 100%);
+    --gradient-cool: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+    --gradient-subtle: linear-gradient(135deg, rgba(79,70,229,0.08) 0%, rgba(124,58,237,0.08) 100%);
+    --gradient-hero: linear-gradient(135deg, #4f46e5 0%, #7c3aed 30%, #db2777 60%, #0d9488 100%);
+    --success: #059669;
+    --success-bg: rgba(5, 150, 105, 0.08);
+    --warning: #d97706;
+    --error: #dc2626;
+    --error-bg: rgba(220, 38, 38, 0.06);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+    --shadow-glow: 0 0 40px rgba(79,70,229,0.08);
+    --ambient-1: rgba(79,70,229,0.04);
+    --ambient-2: rgba(124,58,237,0.03);
+    --ambient-3: rgba(13,148,136,0.03);
+    --ambient-4: rgba(219,39,119,0.02);
 }
 
 /* ── Global ── */
 .stApp {
     background: var(--bg-primary) !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    transition: background 0.4s ease, color 0.4s ease;
 }
 
 /* Ambient background */
@@ -84,12 +129,13 @@ st.markdown("""
     top: 0; left: 0;
     width: 100%; height: 100%;
     background:
-        radial-gradient(ellipse 800px 600px at 15% 30%, rgba(102,126,234,0.06) 0%, transparent 70%),
-        radial-gradient(ellipse 600px 500px at 85% 15%, rgba(118,75,162,0.05) 0%, transparent 70%),
-        radial-gradient(ellipse 900px 400px at 50% 95%, rgba(79,172,254,0.04) 0%, transparent 70%),
-        radial-gradient(ellipse 400px 400px at 70% 60%, rgba(240,147,251,0.03) 0%, transparent 70%);
+        radial-gradient(ellipse 800px 600px at 15% 30%, var(--ambient-1) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 500px at 85% 15%, var(--ambient-2) 0%, transparent 70%),
+        radial-gradient(ellipse 900px 400px at 50% 95%, var(--ambient-3) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 400px at 70% 60%, var(--ambient-4) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
+    transition: background 0.4s ease;
 }
 
 /* ── Sidebar ── */
@@ -136,8 +182,8 @@ section[data-testid="stSidebar"] .stMarkdown span {
 }
 
 @keyframes logoPulse {
-    0%, 100% { filter: drop-shadow(0 0 20px rgba(102,126,234,0.4)); }
-    50%      { filter: drop-shadow(0 0 30px rgba(118,75,162,0.5)); }
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(99,102,241,0.4)); }
+    50%      { filter: drop-shadow(0 0 30px rgba(139,92,246,0.5)); }
 }
 
 /* ── Divider ── */
@@ -171,7 +217,7 @@ section[data-testid="stSidebar"] .stMarkdown span {
 .hero-header h1 {
     font-size: 3.2rem !important;
     font-weight: 900 !important;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 40%, #f093fb 70%, #4facfe 100%);
+    background: var(--gradient-hero);
     background-size: 300% 300%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -186,6 +232,64 @@ section[data-testid="stSidebar"] .stMarkdown span {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+}
+
+/* ── Theme Toggle Button ── */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Inter', sans-serif;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--gradient-subtle);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ── Upload Drop Area ── */
+.upload-drop-area {
+    background: var(--bg-glass);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.5s ease;
+    cursor: pointer;
+}
+
+.upload-drop-area:hover {
+    border-color: var(--accent-1);
+    background: var(--gradient-subtle);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+}
+
+.upload-drop-area .upload-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 20px rgba(99,102,241,0.3));
+    animation: floatBounce 3s ease-in-out infinite;
+}
+
+@keyframes floatBounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
 }
 
 .hero-subtitle {
@@ -262,8 +366,8 @@ section[data-testid="stSidebar"] .stMarkdown span {
 
 /* ── Insight Panel ── */
 .insight-panel {
-    background: linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.06), rgba(79,172,254,0.04));
-    border: 1px solid rgba(102,126,234,0.2);
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.06), rgba(34,211,238,0.04));
+    border: 1px solid rgba(99,102,241,0.2);
     border-radius: var(--radius-lg);
     padding: 2rem;
     line-height: 1.9;
@@ -290,8 +394,8 @@ section[data-testid="stSidebar"] .stMarkdown span {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    background: rgba(102,126,234,0.12);
-    border: 1px solid rgba(102,126,234,0.2);
+    background: rgba(99,102,241,0.12);
+    border: 1px solid rgba(99,102,241,0.2);
     border-radius: 8px;
     padding: 0.3rem 0.8rem;
     font-size: 0.78rem;
@@ -353,15 +457,16 @@ section[data-testid="stSidebar"] .stMarkdown span {
     font-size: 0.78rem !important;
     color: var(--text-secondary) !important;
     font-weight: 500 !important;
-    transition: all 0.3s ease !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer !important;
 }
 
 .chip-btn:hover {
-    background: rgba(102,126,234,0.1) !important;
+    background: var(--gradient-subtle) !important;
     border-color: var(--accent-1) !important;
     color: var(--text-primary) !important;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm) !important;
 }
 
 /* ── Code Block ── */
@@ -720,7 +825,7 @@ div[data-testid="stExpander"] summary {
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(102,126,234,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-1); }
 
 /* ── Animations ── */
@@ -783,12 +888,106 @@ div[data-testid="stExpander"] summary {
     margin-top: 3rem;
 }
 
-/* Hide Streamlit branding */
+/* Hide Streamlit branding but keep sidebar toggle */
 #MainMenu { visibility: hidden; }
 footer { visibility: hidden; }
-header { visibility: hidden; }
+header[data-testid="stHeader"] { background: transparent !important; }
+
+/* ── Force sidebar ALWAYS visible (not collapsible) ── */
+section[data-testid="stSidebar"] {
+    left: 0 !important;
+    min-width: 310px !important;
+    max-width: 340px !important;
+    width: 310px !important;
+    transform: none !important;
+    visibility: visible !important;
+    display: flex !important;
+    z-index: 999 !important;
+}
+
+section[data-testid="stSidebar"] > div:first-child {
+    width: 310px !important;
+    min-width: 310px !important;
+}
+
+/* Hide all sidebar collapse/expand controls */
+button[kind="header"],
+[data-testid="collapsedControl"],
+section[data-testid="stSidebar"] button[aria-label="Close"],
+section[data-testid="stSidebar"] [data-testid="stSidebarCollapsedControl"] {
+    display: none !important;
+}
 </style>
 """, unsafe_allow_html=True)
+
+# ── JavaScript: Force sidebar + Theme switching ──
+import streamlit.components.v1 as components
+components.html("""
+<script>
+(function() {
+    const doc = window.parent.document;
+    
+    // Force sidebar open
+    function forceSidebar() {
+        const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+        if (sidebar) {
+            sidebar.style.setProperty('left', '0px', 'important');
+            sidebar.style.setProperty('width', '310px', 'important');
+            sidebar.style.setProperty('min-width', '310px', 'important');
+            sidebar.style.setProperty('visibility', 'visible', 'important');
+            sidebar.style.setProperty('transform', 'none', 'important');
+            sidebar.style.setProperty('display', 'flex', 'important');
+            var inner = sidebar.querySelector('div');
+            if (inner) {
+                inner.style.setProperty('width', '310px', 'important');
+                inner.style.setProperty('min-width', '310px', 'important');
+            }
+        }
+        var btns = doc.querySelectorAll('[data-testid="collapsedControl"], button[kind="header"]');
+        btns.forEach(function(b) { b.style.setProperty('display', 'none', 'important'); });
+    }
+    
+    // Theme management
+    function getStoredTheme() {
+        try { return localStorage.getItem('aa-theme') || 'dark'; } catch(e) { return 'dark'; }
+    }
+    
+    function applyTheme(theme) {
+        const app = doc.querySelector('.stApp') || doc.documentElement;
+        app.setAttribute('data-theme', theme);
+        doc.documentElement.setAttribute('data-theme', theme);
+        try { localStorage.setItem('aa-theme', theme); } catch(e) {}
+        
+        // Update toggle button text
+        var toggleBtn = doc.getElementById('theme-toggle-btn');
+        if (toggleBtn) {
+            toggleBtn.innerHTML = theme === 'dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode';
+        }
+    }
+    
+    // Initialize theme
+    applyTheme(getStoredTheme());
+    
+    // Watch for toggle button clicks
+    function setupToggle() {
+        var btn = doc.getElementById('theme-toggle-btn');
+        if (btn && !btn.dataset.bound) {
+            btn.dataset.bound = 'true';
+            btn.addEventListener('click', function() {
+                var current = getStoredTheme();
+                applyTheme(current === 'dark' ? 'light' : 'dark');
+            });
+        }
+    }
+    
+    forceSidebar();
+    setupToggle();
+    setInterval(function() { forceSidebar(); setupToggle(); }, 500);
+    var observer = new MutationObserver(function() { forceSidebar(); setupToggle(); });
+    observer.observe(doc.body, { childList: true, subtree: true, attributes: true });
+})();
+</script>
+""", height=0)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -806,6 +1005,8 @@ if "query_input" not in st.session_state:
     st.session_state.query_input = ""
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -866,8 +1067,45 @@ with st.sidebar:
         <div class="logo-text">Auto-Analyst AI</div>
         <div class="logo-sub">Powered by LangGraph • Llama 3.3</div>
     </div>
-    <div class="divider"></div>
     """, unsafe_allow_html=True)
+
+    # ── Theme Toggle ──
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+    import streamlit.components.v1 as comp_sidebar
+    comp_sidebar.html("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    body { margin: 0; padding: 0; background: transparent !important; }
+    .theme-btn {
+        display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        width: 100%; padding: 0.55rem 0.8rem; box-sizing: border-box;
+        background: rgba(30,34,53,0.9); border: 1px solid rgba(99,102,241,0.15);
+        border-radius: 12px; color: #94a3b8; font-size: 0.78rem; font-weight: 600;
+        cursor: pointer; transition: all 0.3s ease; font-family: 'Inter', sans-serif;
+    }
+    .theme-btn:hover { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.4); color: #f1f5f9; transform: translateY(-1px); }
+    </style>
+    <button class="theme-btn" id="theme-toggle-btn" onclick="toggleTheme()">🌙 Switch to Light Mode</button>
+    <script>
+    function getTheme() { try { return localStorage.getItem('aa-theme') || 'dark'; } catch(e) { return 'dark'; } }
+    function updateBtn() {
+        var t = getTheme();
+        var b = document.getElementById('theme-toggle-btn');
+        if(b) b.innerHTML = t === 'dark' ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode';
+    }
+    function toggleTheme() {
+        var t = getTheme() === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem('aa-theme', t); } catch(e) {}
+        var doc = window.parent.document;
+        var app = doc.querySelector('.stApp');
+        if(app) app.setAttribute('data-theme', t);
+        doc.documentElement.setAttribute('data-theme', t);
+        updateBtn();
+    }
+    updateBtn();
+    </script>
+    """, height=42)
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
     # ── File Uploader (Single unified uploader) ──
     st.markdown('<div class="section-label">📂 Upload Dataset</div>', unsafe_allow_html=True)
@@ -884,8 +1122,8 @@ with st.sidebar:
         prev = st.session_state.file_data
         is_new_file = (
             prev is None
-            or prev.get("filename") != uploaded_file.name
-            and prev.get("original_pdf") != uploaded_file.name
+            or (prev.get("filename") != uploaded_file.name
+                and prev.get("original_pdf") != uploaded_file.name)
         )
 
         if is_new_file:
@@ -1029,10 +1267,19 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ── Empty State ──
 if not st.session_state.file_data:
     st.markdown("""
-    <div class="glass-card empty-state">
-        <div class="empty-icon">📂</div>
-        <h3>No Data Loaded</h3>
-        <p>Upload a CSV file from the sidebar to get started</p>
+    <div class="glass-card" style="text-align:center; padding: 3rem 2rem; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div class="upload-drop-area">
+            <div class="upload-icon">📂</div>
+            <h3 style="color: var(--text-primary); font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem;">
+                Drop Your Dataset Here
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.3rem;">
+                Upload CSV, PDF, Excel, or JSON files to start analyzing
+            </p>
+            <p style="color: var(--text-dim); font-size: 0.75rem;">
+                Or use the sidebar uploader →
+            </p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1040,30 +1287,33 @@ if not st.session_state.file_data:
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown("""
-        <div class="glass-card" style="text-align:center; padding: 1.5rem;">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">📊</div>
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.9rem;">Smart Profiling</div>
-            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem;">
+        <div class="glass-card" style="text-align:center; padding: 1.8rem 1.2rem; position: relative; overflow: hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:3px; background: var(--gradient-main); border-radius: 3px 3px 0 0;"></div>
+            <div style="font-size:2.2rem; margin-bottom:0.7rem; filter: drop-shadow(0 0 12px rgba(99,102,241,0.3)); transition: transform 0.3s ease;">📊</div>
+            <div style="font-weight:700; color:var(--text-primary); font-size:0.95rem; margin-bottom: 0.3rem;">Smart Profiling</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); line-height: 1.5;">
                 Auto-detects data types, patterns &amp; distributions
             </div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown("""
-        <div class="glass-card" style="text-align:center; padding: 1.5rem;">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">🧠</div>
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.9rem;">AI-Powered Insights</div>
-            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem;">
+        <div class="glass-card" style="text-align:center; padding: 1.8rem 1.2rem; position: relative; overflow: hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:3px; background: var(--gradient-warm); border-radius: 3px 3px 0 0;"></div>
+            <div style="font-size:2.2rem; margin-bottom:0.7rem; filter: drop-shadow(0 0 12px rgba(236,72,153,0.3)); transition: transform 0.3s ease;">🧠</div>
+            <div style="font-weight:700; color:var(--text-primary); font-size:0.95rem; margin-bottom: 0.3rem;">AI-Powered Insights</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); line-height: 1.5;">
                 LLM generates analysis plans &amp; interprets results
             </div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         st.markdown("""
-        <div class="glass-card" style="text-align:center; padding: 1.5rem;">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">📈</div>
-            <div style="font-weight:600; color:var(--text-primary); font-size:0.9rem;">Multi-Chart Output</div>
-            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.3rem;">
+        <div class="glass-card" style="text-align:center; padding: 1.8rem 1.2rem; position: relative; overflow: hidden;">
+            <div style="position:absolute; top:0; left:0; right:0; height:3px; background: var(--gradient-cool); border-radius: 3px 3px 0 0;"></div>
+            <div style="font-size:2.2rem; margin-bottom:0.7rem; filter: drop-shadow(0 0 12px rgba(34,211,238,0.3)); transition: transform 0.3s ease;">📈</div>
+            <div style="font-weight:700; color:var(--text-primary); font-size:0.95rem; margin-bottom: 0.3rem;">Multi-Chart Output</div>
+            <div style="font-size:0.78rem; color:var(--text-muted); line-height: 1.5;">
                 Auto-generates multiple publication-quality charts
             </div>
         </div>
