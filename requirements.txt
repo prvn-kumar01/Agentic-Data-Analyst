@@ -8,9 +8,7 @@ langchain-core
 langchain-groq             # Llama 3.3 via Groq API
 
 # --- Embeddings ---
-sentence-transformers      # HuggingFace Embeddings (all-MiniLM-L6-v2)
-langchain-huggingface
-torch                      
+langchain-huggingface      # HuggingFace Inference API Embeddings
 
 # --- Data Science Tools ---
 pandas
@@ -18,7 +16,7 @@ numpy
 matplotlib
 seaborn
 tabulate                   # Pretty printing tables
-openpyxl                   # Excel file support
+pdfplumber                 # PDF table extraction
 
 # --- Web UI & API Server ---
 streamlit                  # Streamlit frontend UI

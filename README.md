@@ -177,7 +177,7 @@ Create a `.env` file in the project root:
 
 ```env
 GROQ_API_KEY=your_groq_api_key_here
-HUGGINGFACE_API_KEY=your_huggingface_api_key_here
+HUGGINGFACEHUB_API_TOKEN=your_huggingface_api_token_here
 
 # Optional: Enable LangSmith Tracing
 LANGCHAIN_TRACING_V2=true

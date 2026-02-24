@@ -98,6 +98,83 @@ async def upload_csv(file: UploadFile = File(...)):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ENDPOINT: Upload PDF (extract tables → CSV)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+@api.post("/api/upload-pdf")
+async def upload_pdf(file: UploadFile = File(...)):
+    """Upload a PDF file, extract tables, convert to CSV and return preview."""
+    try:
+        import pdfplumber
+
+        # Save PDF
+        pdf_path = os.path.join(UPLOAD_DIR, file.filename)
+        with open(pdf_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+
+        # Extract tables from all pages
+        all_tables = []
+        with pdfplumber.open(pdf_path) as pdf:
+            for page in pdf.pages:
+                tables = page.extract_tables()
+                for table in tables:
+                    if table and len(table) > 1:
+                        # First row = header, rest = data
+                        header = [str(h).strip() if h else f"col_{i}" for i, h in enumerate(table[0])]
+                        rows = table[1:]
+                        tdf = pd.DataFrame(rows, columns=header)
+                        all_tables.append(tdf)
+
+        if not all_tables:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "No tables found in the PDF. Please upload a PDF with tabular data."}
+            )
+
+        # Combine all tables
+        df = pd.concat(all_tables, ignore_index=True)
+
+        # Save as CSV for the agent pipeline
+        csv_filename = file.filename.rsplit(".", 1)[0] + ".csv"
+        csv_path = os.path.join(UPLOAD_DIR, csv_filename)
+        df.to_csv(csv_path, index=False)
+
+        # Column info
+        columns_info = []
+        for col in df.columns:
+            columns_info.append({
+                "name": col,
+                "dtype": str(df[col].dtype),
+                "non_null": int(df[col].notna().sum()),
+                "unique": int(df[col].nunique()),
+                "sample": str(df[col].dropna().iloc[0]) if not df[col].dropna().empty else "N/A"
+            })
+
+        return {
+            "success": True,
+            "filename": csv_filename,
+            "filepath": csv_path,
+            "original_pdf": file.filename,
+            "rows": df.shape[0],
+            "cols": df.shape[1],
+            "columns": columns_info,
+            "preview": df.head(8).to_dict(orient="records"),
+            "column_names": list(df.columns)
+        }
+
+    except ImportError:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": "pdfplumber not installed. Run: pip install pdfplumber"}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": str(e)}
+        )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # ENDPOINT: Analyze Data
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 @api.post("/api/analyze")

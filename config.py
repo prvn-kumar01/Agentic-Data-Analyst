@@ -1,14 +1,16 @@
 import os
-import torch
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 
 load_dotenv()
 
 if not os.getenv("GROQ_API_KEY"):
     raise ValueError("❌ ERROR: GROQ_API_KEY is missing in .env file!")
+
+if not os.getenv("HUGGINGFACEHUB_API_TOKEN"):
+    raise ValueError("❌ ERROR: HUGGINGFACEHUB_API_TOKEN is missing in .env file!")
 
 
 llm_brain = ChatGroq(
@@ -25,12 +27,9 @@ llm_coder = ChatGroq(
 )
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"🚀 System Hardware: Embeddings running on {device.upper()}")
-
-embeddings = HuggingFaceEmbeddings(
-    model_name="all-MiniLM-L6-v2",
-    model_kwargs={'device': device}
+embeddings = HuggingFaceEndpointEmbeddings(
+    model="sentence-transformers/all-MiniLM-L6-v2",
+    huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
 )
 
 # Export

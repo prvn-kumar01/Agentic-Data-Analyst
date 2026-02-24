@@ -869,37 +869,76 @@ with st.sidebar:
     <div class="divider"></div>
     """, unsafe_allow_html=True)
 
-    # ── File Uploader ──
-    st.markdown('<div class="section-label">📂 Data Source</div>', unsafe_allow_html=True)
+    # ── File Uploader (Single unified uploader) ──
+    st.markdown('<div class="section-label">📂 Upload Dataset</div>', unsafe_allow_html=True)
     uploaded_file = st.file_uploader(
-        "Upload CSV",
-        type=["csv"],
+        "Upload your dataset",
+        type=["csv", "pdf", "xlsx", "xls", "json"],
         label_visibility="collapsed",
-        help="Upload a CSV file to analyze"
+        help="Upload CSV, PDF, Excel, or JSON files to analyze",
+        key="dataset_uploader"
     )
 
-    if uploaded_file is not None and (
-        st.session_state.file_data is None or
-        st.session_state.file_data.get("filename") != uploaded_file.name
-    ):
-        with st.spinner("Uploading..."):
-            try:
-                files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "text/csv")}
-                resp = requests.post(f"{API_BASE}/api/upload", files=files, timeout=30)
-                data = resp.json()
+    if uploaded_file is not None:
+        # Determine if this is a new file
+        prev = st.session_state.file_data
+        is_new_file = (
+            prev is None
+            or prev.get("filename") != uploaded_file.name
+            and prev.get("original_pdf") != uploaded_file.name
+        )
 
-                if data.get("success"):
-                    st.session_state.file_data = data
-                    st.session_state.result = None
-                    st.session_state.node_log = []
-                    st.session_state.chat_history = []
-                    st.toast(f"✅ {uploaded_file.name} loaded!", icon="📂")
-                else:
-                    st.error(f"Upload failed: {data.get('error', 'Unknown error')}")
-            except requests.exceptions.ConnectionError:
-                st.error("❌ Cannot connect to API server. Make sure FastAPI is running on port 8000.")
-            except Exception as e:
-                st.error(f"❌ Upload error: {e}")
+        if is_new_file:
+            file_ext = uploaded_file.name.rsplit(".", 1)[-1].lower() if "." in uploaded_file.name else ""
+
+            if file_ext == "pdf":
+                # PDF → extract tables via /api/upload-pdf
+                with st.spinner("📑 Extracting tables from PDF..."):
+                    try:
+                        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
+                        resp = requests.post(f"{API_BASE}/api/upload-pdf", files=files, timeout=60)
+                        data = resp.json()
+
+                        if data.get("success"):
+                            st.session_state.file_data = data
+                            st.session_state.result = None
+                            st.session_state.node_log = []
+                            st.session_state.chat_history = []
+                            st.toast(f"✅ Tables extracted from {uploaded_file.name}!", icon="📑")
+                        else:
+                            st.error(f"PDF extraction failed: {data.get('error', 'Unknown error')}")
+                    except requests.exceptions.ConnectionError:
+                        st.error("❌ Cannot connect to API server. Make sure FastAPI is running on port 8000.")
+                    except Exception as e:
+                        st.error(f"❌ Upload error: {e}")
+            else:
+                # CSV / Excel / JSON → upload via /api/upload
+                mime_map = {
+                    "csv": "text/csv",
+                    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "xls": "application/vnd.ms-excel",
+                    "json": "application/json",
+                }
+                mime = mime_map.get(file_ext, "application/octet-stream")
+
+                with st.spinner("📂 Uploading..."):
+                    try:
+                        files = {"file": (uploaded_file.name, uploaded_file.getvalue(), mime)}
+                        resp = requests.post(f"{API_BASE}/api/upload", files=files, timeout=30)
+                        data = resp.json()
+
+                        if data.get("success"):
+                            st.session_state.file_data = data
+                            st.session_state.result = None
+                            st.session_state.node_log = []
+                            st.session_state.chat_history = []
+                            st.toast(f"✅ {uploaded_file.name} loaded!", icon="📂")
+                        else:
+                            st.error(f"Upload failed: {data.get('error', 'Unknown error')}")
+                    except requests.exceptions.ConnectionError:
+                        st.error("❌ Cannot connect to API server. Make sure FastAPI is running on port 8000.")
+                    except Exception as e:
+                        st.error(f"❌ Upload error: {e}")
 
     # ── File Info ──
     if st.session_state.file_data:
