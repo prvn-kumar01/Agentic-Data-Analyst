@@ -4,13 +4,13 @@ langgraph>=0.0.50          # Stateful Graph Orchestration
 langchain-community
 langchain-core
 
-# --- LLM Providers ---
+
 langchain-groq             # Llama 3.3 via Groq API
 
-# --- Embeddings ---
+
 langchain-huggingface      # HuggingFace Inference API Embeddings
 
-# --- Data Science Tools ---
+
 pandas
 numpy
 matplotlib

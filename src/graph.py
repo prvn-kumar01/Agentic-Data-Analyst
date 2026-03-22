@@ -1,17 +1,9 @@
-"""
-Auto-Analyst AI — Graph Definition
-Builds the LangGraph StateGraph that orchestrates the agent workflow:
-  profiler → planner → generator → executor → (retry or insight) → END
-"""
-
 from langgraph.graph import StateGraph, END
 from src.state import AgentState
 from src.nodes import profiler_node, planner_node, generator_node, executor_node, insight_node
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# DECISION LOGIC — Routes after Profiler
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def should_proceed_after_profiling(state: AgentState):
     """If CSV loading failed, skip to END instead of planning with bad data."""
     if state.get("error"):
@@ -20,9 +12,7 @@ def should_proceed_after_profiling(state: AgentState):
     return "continue"
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# DECISION LOGIC — Routes after Execution
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def should_continue(state: AgentState):
     """
     Decides whether to retry code generation or finish.
@@ -41,12 +31,10 @@ def should_continue(state: AgentState):
     return "end"
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# BUILD THE GRAPH
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 workflow = StateGraph(AgentState)
 
-# Add Nodes
+
 workflow.add_node("profiler", profiler_node)
 workflow.add_node("planner", planner_node)
 workflow.add_node("generator", generator_node)

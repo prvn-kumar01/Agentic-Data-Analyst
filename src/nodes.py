@@ -20,9 +20,7 @@ from src.tools import execute_python_code
 from src.prompts import PLANNER_PROMPT, CODER_PROMPT, INSIGHT_PROMPT
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# NODE 1: PROFILER — Reads & Summarizes CSV
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def profiler_node(state: AgentState):
     print("\n--- 1. 🕵️ PROFILING DATA ---")
     file_path = state["csv_file_path"]
@@ -45,9 +43,7 @@ def profiler_node(state: AgentState):
     }
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# NODE 2: PLANNER — Creates Analysis Strategy
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def planner_node(state: AgentState):
     print("\n--- 2. 🧠 PLANNING ANALYSIS ---")
     
@@ -78,9 +74,7 @@ def planner_node(state: AgentState):
         return {"plan": ["Load Data", "Analyze based on query", "Plot results"]}
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# NODE 3: GENERATOR — Writes Python Code
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def generator_node(state: AgentState):
     print("\n--- 3. ⌨️ GENERATING CODE ---")
     
@@ -127,9 +121,8 @@ def generator_node(state: AgentState):
         return {"error": f"Code Generation Failed: {str(e)}"}
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # NODE 4: EXECUTOR — Runs Code in Sandbox
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def executor_node(state: AgentState):
     print("\n--- 4. ⚙️ EXECUTING CODE ---")
     
@@ -161,9 +154,7 @@ def executor_node(state: AgentState):
         }
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# NODE 5: INSIGHT — Summarizes Results
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 def insight_node(state: AgentState):
     print("\n--- 5. 📊 GENERATING INSIGHTS ---")
     

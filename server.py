@@ -1,14 +1,3 @@
-"""
-Auto-Analyst AI — FastAPI Backend Server
-REST API wrapping the LangGraph agent for the Streamlit frontend.
-
-Endpoints:
-    POST /api/upload    — Upload CSV, get data preview
-    POST /api/analyze   — Run agent pipeline, get insight + charts
-    GET  /api/charts/{filename} — Serve generated chart images
-
-Run: python server.py
-"""
 
 import os
 import sys
@@ -22,14 +11,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 import uvicorn
 
-# Ensure project root is importable
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.graph import app as agent_app
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# APP SETUP
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 api = FastAPI(
     title="Auto-Analyst AI",
     description="Autonomous Data Analysis Agent API",
@@ -52,9 +39,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(CHART_DIR, exist_ok=True)
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ENDPOINT: Upload CSV
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 @api.post("/api/upload")
 async def upload_csv(file: UploadFile = File(...)):
     """Upload a CSV file and return a data preview."""
@@ -97,9 +82,7 @@ async def upload_csv(file: UploadFile = File(...)):
         )
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ENDPOINT: Upload PDF (extract tables → CSV)
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 @api.post("/api/upload-pdf")
 async def upload_pdf(file: UploadFile = File(...)):
     """Upload a PDF file, extract tables, convert to CSV and return preview."""
@@ -174,9 +157,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         )
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ENDPOINT: Analyze Data
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 @api.post("/api/analyze")
 async def analyze_data(
     filepath: str = Form(...),
@@ -249,9 +230,7 @@ async def analyze_data(
         )
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ENDPOINT: Serve Charts
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 @api.get("/api/charts/{filename}")
 async def get_chart(filename: str):
     """Serve a generated chart image."""
@@ -264,17 +243,13 @@ async def get_chart(filename: str):
     )
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# ENDPOINT: Health Check
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 @api.get("/api/health")
 async def health():
     return {"status": "ok", "agent": "Auto-Analyst AI"}
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# RUN
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 if __name__ == "__main__":
     print("\n🚀 Auto-Analyst AI — API Server")
     print("   Docs:  http://localhost:8000/docs")
