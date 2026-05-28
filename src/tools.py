@@ -19,6 +19,10 @@ import traceback
 
 matplotlib.use('Agg')
 
+# Project root directory (anchored absolute path)
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_OUTPUT_DIR = os.path.join(_PROJECT_ROOT, "data", "output")
+
 
 def _strip_imports(code: str) -> str:
     """
@@ -35,8 +39,10 @@ def _strip_imports(code: str) -> str:
     return '\n'.join(cleaned_lines)
 
 
-def _cleanup_old_charts(output_dir: str = os.path.join("data", "output")):
+def _cleanup_old_charts(output_dir: str = None):
     """Remove previous output charts before a new run."""
+    if output_dir is None:
+        output_dir = _OUTPUT_DIR
     for f in glob.glob(os.path.join(output_dir, "output*.png")):
         try:
             os.remove(f)
@@ -44,8 +50,10 @@ def _cleanup_old_charts(output_dir: str = os.path.join("data", "output")):
             pass
 
 
-def _find_generated_charts(output_dir: str = os.path.join("data", "output")) -> list:
+def _find_generated_charts(output_dir: str = None) -> list:
     """Find all output chart files generated during execution."""
+    if output_dir is None:
+        output_dir = _OUTPUT_DIR
     patterns = ["output.png", "output_*.png"]
     charts = []
     for pattern in patterns:
@@ -78,7 +86,7 @@ def execute_python_code(code: str, csv_path: str, output_image: str = "output.pn
             }
 
     # 2. ENSURE OUTPUT DIRECTORY EXISTS & CLEANUP OLD CHARTS
-    output_dir = os.path.join("data", "output")
+    output_dir = _OUTPUT_DIR
     os.makedirs(output_dir, exist_ok=True)
     _cleanup_old_charts(output_dir)
 
@@ -87,35 +95,62 @@ def execute_python_code(code: str, csv_path: str, output_image: str = "output.pn
     redirected_output = io.StringIO()
     sys.stdout = redirected_output
 
-    # 4. SANDBOX ENVIRONMENT
+    # 4. SANDBOX ENVIRONMENT — includes commonly needed modules
+    import builtins as _builtins
+    import math
+    import datetime
+    import collections
+    import warnings as _warnings_mod
+
+    # Try to load scipy.stats (commonly used by LLM for outlier detection, z-scores, etc.)
+    try:
+        from scipy import stats as _scipy_stats
+        import scipy as _scipy
+    except ImportError:
+        _scipy_stats = None
+        _scipy = None
+
+    # Use absolute path for csv_path too
+    abs_csv_path = os.path.abspath(csv_path)
+
     local_scope = {
         "pd": pd, "np": np, "plt": plt, "sns": sns,
-        "csv_file_path": csv_path
+        "csv_file_path": abs_csv_path,
+        "OUTPUT_DIR": output_dir,
+        "os": os,
+        "re": re,
+        "math": math,
+        "datetime": datetime,
+        "collections": collections,
+        "warnings": _warnings_mod,
     }
 
-    # 5. SAFE BUILTINS
-    safe_builtins = {
-        "print": print, "len": len, "range": range, "enumerate": enumerate,
-        "zip": zip, "map": map, "filter": filter, "sorted": sorted,
-        "reversed": reversed, "list": list, "dict": dict, "set": set,
-        "tuple": tuple, "str": str, "int": int, "float": float, "bool": bool,
-        "abs": abs, "round": round, "min": min, "max": max, "sum": sum,
-        "any": any, "all": all, "isinstance": isinstance, "type": type,
-        "hasattr": hasattr, "getattr": getattr, "setattr": setattr,
-        "ValueError": ValueError, "TypeError": TypeError, "KeyError": KeyError,
-        "IndexError": IndexError, "Exception": Exception,
-        "True": True, "False": False, "None": None,
-    }
+    # Add scipy if available
+    if _scipy_stats is not None:
+        local_scope["stats"] = _scipy_stats
+        local_scope["scipy"] = _scipy
+
+    # 5. SAFE BUILTINS — use real builtins, only remove truly dangerous ones
+    dangerous_names = {"eval", "exec", "compile", "__import__", "breakpoint", "exit", "quit"}
+    safe_builtins = {k: v for k, v in vars(_builtins).items() if k not in dangerous_names}
+    # Re-add __import__ in restricted form (needed by dict comprehensions, f-strings, etc.)
+    safe_builtins["__import__"] = __builtins__.__import__ if hasattr(__builtins__, '__import__') else __import__
 
     try:
         # 6. STRIP IMPORTS & EXECUTE
         clean_code = _strip_imports(code)
-        full_code = f'csv_file_path = r"{csv_path}"\n' + clean_code
+        # Inject absolute csv path and OUTPUT_DIR into the code
+        full_code = f'csv_file_path = r"{abs_csv_path}"\n'
+        full_code += f'OUTPUT_DIR = r"{output_dir}"\n'
+        full_code += clean_code
         exec(full_code, {"__builtins__": safe_builtins}, local_scope)
         
         # 7. CAPTURE OUTPUT
         sys.stdout = old_stdout
         output = redirected_output.getvalue()
+        
+        # Close all matplotlib figures to free memory
+        plt.close('all')
         
         # 8. FIND ALL GENERATED CHARTS
         charts = _find_generated_charts(output_dir)
@@ -129,6 +164,7 @@ def execute_python_code(code: str, csv_path: str, output_image: str = "output.pn
 
     except Exception as e:
         sys.stdout = old_stdout
+        plt.close('all')
         error_msg = traceback.format_exc()
         clean_error = error_msg.split("\n")[-2] if "\n" in error_msg else str(e)
         return {

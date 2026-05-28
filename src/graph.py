@@ -7,7 +7,7 @@ from src.nodes import profiler_node, planner_node, generator_node, executor_node
 def should_proceed_after_profiling(state: AgentState):
     """If CSV loading failed, skip to END instead of planning with bad data."""
     if state.get("error"):
-        print("🛑 Data loading failed. Aborting pipeline.")
+        print("[STOP] Data loading failed. Aborting pipeline.")
         return "abort"
     return "continue"
 
@@ -24,10 +24,10 @@ def should_continue(state: AgentState):
     retry_count = state.get("revision_count", 0)
     
     if retry_count < 3:
-        print(f"🔄 Retrying... (Attempt {retry_count + 1}/3)")
+        print(f"[RETRY] Retrying... (Attempt {retry_count + 1}/3)")
         return "retry"
     
-    print("🛑 Max retries reached. Proceeding with available results.")
+    print("[STOP] Max retries reached. Proceeding with available results.")
     return "end"
 
 

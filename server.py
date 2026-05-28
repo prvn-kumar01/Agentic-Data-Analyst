@@ -32,9 +32,10 @@ api.add_middleware(
     allow_headers=["*"],
 )
 
-# Directories
-UPLOAD_DIR = os.path.join("data", "input")
-CHART_DIR = os.path.join("data", "output")  
+# Directories (use absolute paths based on script location)
+_PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(_PROJECT_ROOT, "data", "input")
+CHART_DIR = os.path.join(_PROJECT_ROOT, "data", "output")  
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(CHART_DIR, exist_ok=True)
 
@@ -42,7 +43,7 @@ os.makedirs(CHART_DIR, exist_ok=True)
 
 @api.post("/api/upload")
 async def upload_csv(file: UploadFile = File(...)):
-    """Upload a CSV file and return a data preview."""
+    """Upload a CSV/Excel/JSON file, convert to CSV if needed, and return a data preview."""
     try:
         # Save file
         file_path = os.path.join(UPLOAD_DIR, file.filename)
@@ -50,8 +51,27 @@ async def upload_csv(file: UploadFile = File(...)):
             content = await file.read()
             f.write(content)
         
-        # Read preview
-        df = pd.read_csv(file_path)
+        # Detect file type and read accordingly
+        ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+        
+        try:
+            if ext in ("xlsx", "xls"):
+                df = pd.read_excel(file_path)
+            elif ext == "json":
+                df = pd.read_json(file_path)
+            else:
+                df = pd.read_csv(file_path)
+        except Exception as read_err:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": f"Cannot read file: {read_err}"}
+            )
+        
+        # If not CSV, convert and save as CSV for the agent pipeline
+        if ext in ("xlsx", "xls", "json"):
+            csv_filename = file.filename.rsplit(".", 1)[0] + ".csv"
+            file_path = os.path.join(UPLOAD_DIR, csv_filename)
+            df.to_csv(file_path, index=False)
         
         # Column info
         columns_info = []
@@ -66,7 +86,7 @@ async def upload_csv(file: UploadFile = File(...)):
         
         return {
             "success": True,
-            "filename": file.filename,
+            "filename": os.path.basename(file_path),
             "filepath": file_path,
             "rows": df.shape[0],
             "cols": df.shape[1],
@@ -251,7 +271,7 @@ async def health():
 
 
 if __name__ == "__main__":
-    print("\n🚀 Auto-Analyst AI — API Server")
-    print("   Docs:  http://localhost:8000/docs")
-    print("   API:   http://localhost:8000/api\n")
+    print("\n>>> Auto-Analyst AI - API Server")
+    print("    Docs:  http://localhost:8000/docs")
+    print("    API:   http://localhost:8000/api\n")
     uvicorn.run(api, host="0.0.0.0", port=8000)

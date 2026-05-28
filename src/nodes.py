@@ -22,20 +22,20 @@ from src.prompts import PLANNER_PROMPT, CODER_PROMPT, INSIGHT_PROMPT
 
 
 def profiler_node(state: AgentState):
-    print("\n--- 1. 🕵️ PROFILING DATA ---")
+    print("\n--- 1. PROFILING DATA ---")
     file_path = state["csv_file_path"]
     
     profile = get_csv_summary(file_path)
     
     if not profile.get("success"):
-        print(f"❌ Error loading CSV: {profile.get('error')}")
+        print(f"[ERROR] Error loading CSV: {profile.get('error')}")
         return {
             "error": f"Failed to load CSV: {profile.get('error')}",
             "dataset_summary": "Error loading data.",
             "columns": []
         }
     
-    print(f"✅ Dataset loaded: {len(profile['columns'])} columns")
+    print(f"[OK] Dataset loaded: {len(profile['columns'])} columns")
     return {
         "dataset_summary": profile["text"],
         "columns": profile["columns"],
@@ -45,7 +45,7 @@ def profiler_node(state: AgentState):
 
 
 def planner_node(state: AgentState):
-    print("\n--- 2. 🧠 PLANNING ANALYSIS ---")
+    print("\n--- 2. PLANNING ANALYSIS ---")
     
     parser = JsonOutputParser(pydantic_object=AnalysisPlan)
     
@@ -63,20 +63,20 @@ def planner_node(state: AgentState):
             "user_query": state["user_query"]
         })
         
-        print(f"📋 Plan Generated: {len(plan_result['steps'])} Steps")
+        print(f"[PLAN] Plan Generated: {len(plan_result['steps'])} Steps")
         for i, step in enumerate(plan_result['steps']):
             print(f"   {i+1}. {step}")
             
         return {"plan": plan_result['steps']}
         
     except Exception as e:
-        print(f"⚠️ Planning Error: {e}")
+        print(f"[WARN] Planning Error: {e}")
         return {"plan": ["Load Data", "Analyze based on query", "Plot results"]}
 
 
 
 def generator_node(state: AgentState):
-    print("\n--- 3. ⌨️ GENERATING CODE ---")
+    print("\n--- 3. GENERATING CODE ---")
     
     parser = JsonOutputParser(pydantic_object=PythonCode)
     
@@ -84,7 +84,7 @@ def generator_node(state: AgentState):
     error_context = "NO PREVIOUS ERRORS"
     if state.get("error"):
         error_context = f"""
-        ⚠️ PREVIOUS CODE FAILED!
+        [WARNING] PREVIOUS CODE FAILED!
         Error Message: {state['error']}
         
         Reflect on this error. You MUST fix the code logic to handle this error.
@@ -99,16 +99,21 @@ def generator_node(state: AgentState):
     
     chain = prompt | llm_coder | parser
     
+    # Safely get plan as a list
+    plan = state.get("plan", ["Load Data", "Analyze based on query", "Plot results"])
+    if isinstance(plan, str):
+        plan = [plan]
+    
     try:
         code_result = chain.invoke({
-            "data_summary": state["dataset_summary"],
-            "plan": "\n".join(state["plan"]),
+            "data_summary": state.get("dataset_summary", "No summary available"),
+            "plan": "\n".join(plan),
             "csv_path": state["csv_file_path"],
             "error_context": error_context 
         })
         
-        print(f"💡 Thought: {code_result['thought_process']}")
-        print(f"💻 Code Generated ({len(code_result['code'])} chars)")
+        print(f"[THOUGHT] {code_result['thought_process']}")
+        print(f"[CODE] Code Generated ({len(code_result['code'])} chars)")
         
         return {
             "python_code": code_result['code'],
@@ -117,19 +122,19 @@ def generator_node(state: AgentState):
         }
         
     except Exception as e:
-        print(f"❌ Code Generation Failed: {e}")
+        print(f"[ERROR] Code Generation Failed: {e}")
         return {"error": f"Code Generation Failed: {str(e)}"}
 
 
 # NODE 4: EXECUTOR — Runs Code in Sandbox
 
 def executor_node(state: AgentState):
-    print("\n--- 4. ⚙️ EXECUTING CODE ---")
+    print("\n--- 4. EXECUTING CODE ---")
     
     code = state.get("python_code")
     
     if not code:
-        print("⚠️ No code to execute. Skipping.")
+        print("[WARN] No code to execute. Skipping.")
         return {
             "error": "Execution skipped because no code was generated.",
             "code_output": None
@@ -140,14 +145,14 @@ def executor_node(state: AgentState):
     result = execute_python_code(code, csv_path)
     
     if result["success"]:
-        print(f"✅ Execution Success!\nOutput: {result['output']}")
+        print(f"[OK] Execution Success!\nOutput: {result['output']}")
         return {
             "code_output": result["output"],
             "image_path": result.get("image_path", "output.png"),
             "error": None
         }
     else:
-        print(f"❌ Execution Failed!\nError: {result['error']}")
+        print(f"[ERROR] Execution Failed!\nError: {result['error']}")
         return {
             "code_output": None,
             "error": result["error"]
@@ -156,22 +161,35 @@ def executor_node(state: AgentState):
 
 
 def insight_node(state: AgentState):
-    print("\n--- 5. 📊 GENERATING INSIGHTS ---")
+    print("\n--- 5. GENERATING INSIGHTS ---")
     
-    query = state["user_query"]
-    code_output = state.get("code_output", "No textual output")
+    query = state.get("user_query", "Analyze the data")
+    code_output = state.get("code_output") or "No textual output available"
+    error = state.get("error")
     
-    prompt = INSIGHT_PROMPT.format(
-        query=query,
-        code_output=code_output
-    )
+    # If there was an execution error but no output, include error context
+    if error and code_output == "No textual output available":
+        code_output = f"Code execution encountered an error: {error}\nPlease summarize what went wrong and suggest next steps."
     
-    response = llm_brain.invoke([HumanMessage(content=prompt)])
-    final_answer = response.content
-    
-    print(f"📝 Final Insight: {final_answer[:200]}...")
-    
-    return {
-        "final_answer": final_answer,
-        "messages": [SystemMessage(content=final_answer)]
-    }
+    try:
+        prompt = INSIGHT_PROMPT.format(
+            query=query,
+            code_output=code_output
+        )
+        
+        response = llm_brain.invoke([HumanMessage(content=prompt)])
+        final_answer = response.content
+        
+        print(f"[INSIGHT] Final Insight: {final_answer[:200]}...")
+        
+        return {
+            "final_answer": final_answer,
+            "messages": [SystemMessage(content=final_answer)]
+        }
+    except Exception as e:
+        print(f"[ERROR] Insight generation failed: {e}")
+        fallback = f"Analysis completed but insight generation encountered an error: {str(e)}\n\nRaw output from analysis:\n{code_output[:500]}"
+        return {
+            "final_answer": fallback,
+            "messages": [SystemMessage(content=fallback)]
+        }

@@ -51,15 +51,25 @@ CRITICAL RULES:
    numeric_df = df.select_dtypes(include='number')
    NEVER call .corr() or .mean() on string/object columns.
 6. For CATEGORICAL columns (object/string dtype), use value_counts(), groupby(), countplot, etc.
-7. Do NOT use import statements — pd, np, plt, sns are pre-loaded.
+7. Do NOT use import statements — the following are pre-loaded: pd (pandas), np (numpy), plt (matplotlib.pyplot), sns (seaborn), os, re, math, datetime, collections, warnings, stats (scipy.stats), scipy.
+   Use 'stats' directly for scipy.stats functions (e.g., stats.zscore(), stats.pearsonr()).
 
-CHART GENERATION (IMPORTANT — create MULTIPLE charts):
-- Create a figure with 2x2 or 2x3 subplots using: fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-- Or create 4-5 SEPARATE charts saved as: data/output/output_1.png, data/output/output_2.png, data/output/output_3.png, data/output/output_4.png, data/output/output_5.png
+CHART GENERATION (CRITICAL — you MUST create charts):
+- A variable OUTPUT_DIR is pre-defined with the absolute path to the output directory. ALWAYS use it.
+- Save charts using: plt.savefig(os.path.join(OUTPUT_DIR, "output_1.png"), dpi=150, bbox_inches='tight')
+- Create 4-5 SEPARATE charts saved as output_1.png, output_2.png, output_3.png, output_4.png, output_5.png inside OUTPUT_DIR.
+- Example save pattern:
+    fig, ax = plt.subplots(figsize=(10, 6))
+    # ... plot code ...
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR, "output_1.png"), dpi=150, bbox_inches='tight')
+    plt.close()
+- NEVER use hardcoded paths like "data/output/output_1.png". ALWAYS use os.path.join(OUTPUT_DIR, "output_N.png").
 - Each chart should have a clear title, axis labels, and use different colors/palettes.
-- Use plt.tight_layout() before saving.
-- Always call plt.close() after saving each figure.
+- Use plt.tight_layout() BEFORE saving.
+- ALWAYS call plt.close() after saving EACH figure to free memory.
 - Make charts visually appealing: use sns color palettes, add grid, use proper font sizes.
+- NEVER call plt.show() — it will cause errors. Only use plt.savefig().
 
 OUTPUT:
 - Print summary statistics and key insights using print().

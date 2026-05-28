@@ -1497,7 +1497,15 @@ else:
                     full_url = f"{API_BASE}{chart_url}"
                     chart_name = os.path.basename(chart_url).replace(".png", "").replace("_", " ").title()
                     st.markdown(f'<div class="chart-card">', unsafe_allow_html=True)
-                    st.image(full_url, use_container_width=True)
+                    try:
+                        # Fetch chart image with error handling
+                        chart_resp = requests.get(full_url, timeout=10)
+                        if chart_resp.status_code == 200:
+                            st.image(chart_resp.content, use_container_width=True)
+                        else:
+                            st.warning(f"Chart not found: {chart_name}")
+                    except Exception as chart_err:
+                        st.warning(f"Could not load chart: {chart_name}")
                     st.markdown(f'<div class="chart-label">📊 {chart_name}</div>', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
 
