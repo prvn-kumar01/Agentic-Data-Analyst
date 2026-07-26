@@ -24,7 +24,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("BACKEND_URL", os.getenv("API_BASE", "http://localhost:8000")).rstrip("/")
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # CUSTOM CSS — Premium Dark Theme v2
@@ -1528,6 +1528,24 @@ else:
                         st.markdown(f"**{i}.** {step}")
                 else:
                     st.write(plan)
+
+        # ── Report Export (ZIP) ──
+        if result.get("job_id"):
+            job_id = result["job_id"]
+            download_url = f"{API_BASE}/api/download-report/{job_id}"
+            try:
+                zip_resp = requests.get(download_url, timeout=10)
+                if zip_resp.status_code == 200:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.download_button(
+                        label="📥 Download Complete Report & Charts (ZIP Bundle)",
+                        data=zip_resp.content,
+                        file_name=f"AutoAnalyst_Report_{job_id}.zip",
+                        mime="application/zip",
+                        use_container_width=True
+                    )
+            except Exception:
+                pass
 
 # ── Footer ──
 st.markdown("""

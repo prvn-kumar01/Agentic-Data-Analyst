@@ -141,8 +141,9 @@ def executor_node(state: AgentState):
         }
     
     csv_path = state["csv_file_path"]
+    output_dir = state.get("output_dir")
     
-    result = execute_python_code(code, csv_path)
+    result = execute_python_code(code, csv_path, output_dir=output_dir)
     
     if result["success"]:
         print(f"[OK] Execution Success!\nOutput: {result['output']}")

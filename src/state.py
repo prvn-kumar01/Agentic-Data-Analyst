@@ -28,3 +28,7 @@ class AgentState(TypedDict):
     
     # 7. Safety & Loops
     revision_count: int
+    
+    # 8. Session / Multi-tenancy
+    job_id: Optional[str]
+    output_dir: Optional[str]

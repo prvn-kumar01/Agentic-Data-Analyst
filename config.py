@@ -16,14 +16,16 @@ if not os.getenv("HUGGINGFACEHUB_API_TOKEN"):
 llm_brain = ChatGroq(
     model_name="llama-3.3-70b-versatile", 
     temperature=0.2, 
-    max_retries=2
+    max_retries=3,
+    request_timeout=60
 )
 
 
 llm_coder = ChatGroq(
     model_name="llama-3.3-70b-versatile", 
     temperature=0,   
-    max_retries=2
+    max_retries=3,
+    request_timeout=60
 )
 
 
