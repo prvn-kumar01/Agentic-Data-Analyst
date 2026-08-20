@@ -2,17 +2,17 @@
 
 # 🤖 Auto-Analyst AI
 
-### **Your Autonomous Data Analysis Agent**
+### **Autonomous Data Analysis Agent powered by LangGraph, Groq & E2B**
 
-*Upload a CSV. Ask a question. Get insights, charts, and code — all powered by AI.*
+*Upload CSV, Excel, JSON, or PDF tables. Ask questions in plain English. Get instant interactive Plotly charts, statistical summaries, and AI-generated insights.*
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.60+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Framework-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
-[![Llama 3.3](https://img.shields.io/badge/Llama_3.3-70B-7950F2?style=for-the-badge&logo=meta&logoColor=white)](https://groq.com)
-[![HuggingFace](https://img.shields.io/badge/HuggingFace-Embeddings-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co)
-[![LangSmith](https://img.shields.io/badge/LangSmith-Tracing-FF6F00?style=for-the-badge&logo=langchain&logoColor=white)](https://smith.langchain.com)
+[![Groq](https://img.shields.io/badge/Groq-Ultra_Fast_LLM-F55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com)
+[![E2B](https://img.shields.io/badge/E2B-Cloud_Sandbox-FF6B6B?style=for-the-badge)](https://e2b.dev)
+[![Plotly](https://img.shields.io/badge/Plotly-Interactive_Charts-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://agentic-data-analyst-ixxo.onrender.com)
@@ -21,12 +21,12 @@
 
 <br/>
 
-**Auto-Analyst AI** is a full-stack, agentic data analysis platform that turns plain English questions into complete data insights — with charts, statistical summaries, and AI-generated narratives — all without writing a single line of code.
+**Auto-Analyst AI** is a full-stack autonomous data analyst agent that transforms natural language questions into comprehensive analytics workflows — producing interactive charts, summary statistics, and executive narratives without writing a single line of code.
 
 <br/>
 
-> 💡 *"Show me the top 10 products by revenue and their trend over time"*
-> → The agent profiles your data, plans the analysis, writes Python code, executes it in a sandbox, generates multiple charts, and delivers a polished summary.
+> 💡 *"Show me the top 10 products by revenue and their distribution over time"*
+> → The agent profiles your dataset, formulates a multi-angle analysis plan, writes Python code, executes it in a secure isolated cloud sandbox (E2B), captures interactive Plotly figures, and delivers human-readable business insights with an exportable ZIP report.
 
 </div>
 
@@ -38,41 +38,38 @@
 <tr>
 <td width="50%">
 
-### 🧠 Agentic AI Pipeline
-- **5-node autonomous workflow** orchestrated by LangGraph
-- Self-correcting with up to 3 retry attempts
-- Structured output parsing with Pydantic schemas
+### 🧠 Autonomous Agent Pipeline
+- **5-Node StateGraph** orchestrated by LangGraph (`profiler` → `planner` → `generator` → `executor` → `insight`)
+- **Self-Healing & Auto-Debugging**: automatically reflects on execution errors and retries up to 3 times
+- Stateful conversation memory via SQLite / In-Memory checkpointers
 
-### ⚡ Blazing Fast Inference
-- Powered by **Llama 3.3 70B** via **Groq API**
-- Sub-second LLM response times
-- Separate temperature configs for planning (creative) vs coding (deterministic)
+### ⚡ Ultra-Fast Cloud Inference
+- Powered by high-speed reasoning models on **Groq** (`openai/gpt-oss-120b`, `llama-3.3-70b-versatile`)
+- Sub-second planning and deterministic code synthesis
+- Fully configurable via `GROQ_MODEL` environment variable
 
-### 🔒 Secure Code Execution
-- Sandboxed `exec()` with restricted builtins
-- Dangerous patterns blocked (subprocess, shutil, etc.)
-- Import stripping — libraries pre-injected
+### 🔒 Cloud-Isolated Sandbox (E2B)
+- Code executes in isolated, secure Linux micro-VMs via **E2B Code Interpreter**
+- Safe from malicious execution, resource leaks, or local environment pollution
+- Automated data transfer and headless chart extraction
 
 </td>
 <td width="50%">
 
-### 📊 Multi-Chart Generation
-- Generates **4–5 publication-quality visualizations** per query
-- Seaborn + Matplotlib with beautiful color palettes
-- Distribution, correlation, comparison, and ranking charts
-- All charts saved to `data/output/` for easy access
+### 📊 Multi-Chart Interactive Gallery
+- Generates **3–5 publication-grade Plotly interactive charts** per analysis query
+- Interactive zoom, pan, hover tooltips, and responsive layout
+- Fallback support for Seaborn and Matplotlib figures
 
-### 🎨 Premium Streamlit Frontend
-- **Interactive web UI** with glassmorphism dark theme
-- Drag-and-drop CSV upload with instant data preview
-- Real-time pipeline status tracking with animated steps
-- Chart gallery, code panel, and AI-generated insight display
-- Quick prompt suggestions for common analysis types
+### 📂 Multi-Format File Ingestion
+- Upload **CSV**, **Excel (.xlsx, .xls)**, **JSON**, or extract tables from **PDF** documents
+- Automatic encoding detection & data type profiling
+- Instant schema preview with column missing value metrics
 
-### 🐳 One-Command Deployment
-- Single Docker image (FastAPI + Streamlit + Supervisord)
-- `docker-compose up` and you're live
-- Production-ready with health checks
+### 📦 Report Bundle & Export
+- Download complete analysis bundle as a **ZIP file** (includes `report.md`, Python script, and chart assets)
+- Glassmorphism dark-themed UI built on Streamlit with quick-prompt chips
+- One-click containerized deployment (FastAPI + Streamlit via Supervisord)
 
 </td>
 </tr>
@@ -83,55 +80,52 @@
 ## 🏗️ System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         AUTO-ANALYST AI                                │
-├──────────────────────────────┬──────────────────────────────────────────┤
-│        FRONTEND              │              BACKEND                    │
-│   Streamlit (Port 8501)      │         FastAPI + LangGraph             │
-│                              │                                        │
-│  ┌────────────────────┐      │   ┌──────────────────────────────────┐  │
-│  │  📂 File Upload    │──────┼──▶│  POST /api/upload                │  │
-│  └────────────────────┘      │   └──────────────────────────────────┘  │
-│  ┌────────────────────┐      │   ┌──────────────────────────────────┐  │
-│  │  💬 Query Input    │──────┼──▶│  POST /api/analyze               │  │
-│  └────────────────────┘      │   └───────────────┬──────────────────┘  │
-│  ┌────────────────────┐      │                   │                    │
-│  │  ⚙️ Pipeline Status│      │                   ▼                    │
-│  │  📊 Chart Gallery  │◀─────┼───  LangGraph Agent Pipeline          │
-│  │  💻 Code Panel     │      │   ┌────────────────────────────────┐   │
-│  │  📝 Insight Panel  │      │   │  Profiler → Planner → Generator│   │
-│  └────────────────────┘      │   │  → Executor → Insight          │   │
-│                              │   └────────────────────────────────┘   │
-└──────────────────────────────┴──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              AUTO-ANALYST AI                                    │
+├───────────────────────────────┬─────────────────────────────────────────────────┤
+│        FRONTEND               │                   BACKEND                       │
+│    Streamlit (Port 8501)      │              FastAPI + LangGraph                │
+│                               │                                                 │
+│  ┌─────────────────────┐      │   ┌─────────────────────────────────────────┐   │
+│  │ 📂 File Upload      │──────┼──▶│  POST /api/upload /api/upload-pdf       │   │
+│  │    (CSV/XLSX/PDF)   │      │   └─────────────────────────────────────────┘   │
+│  └─────────────────────┘      │   ┌─────────────────────────────────────────┐   │
+│  ┌─────────────────────┐      │   │  POST /api/analyze                      │   │
+│  │ 💬 Query Input      │──────┼──▶│   ├── 1. Data Profiler                  │   │
+│  │    & Prompt Chips   │      │   │   ├── 2. Analysis Planner               │   │
+│  └─────────────────────┘      │   │   ├── 3. Code Generator (Groq)          │   │
+│  ┌─────────────────────┐      │   │   ├── 4. E2B Sandbox Executor           │   │
+│  │ ⚙️ Pipeline Status  │      │   │   └── 5. Insight Engine                 │   │
+│  │ 📈 Plotly Gallery   │◀─────┼───│  GET  /api/charts/{job_id}/{file}       │   │
+│  │ 💻 Python Script    │      │   │  GET  /api/download-report/{job_id}     │   │
+│  │ 📥 Download ZIP     │      │   └─────────────────────────────────────────┘   │
+│  └─────────────────────┘      │                                                 │
+└───────────────────────────────┴─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🔄 Agent Pipeline — How It Works
-
-The agent operates as a **stateful graph** where each node performs a specialized task:
+## 🔄 Agent Pipeline — Workflow
 
 ```mermaid
 graph LR
-    A["📂 Upload CSV"] --> B["🕵️ Profiler"]
-    B -->|"Data loaded"| C["🧠 Planner"]
-    B -->|"Error"| Z["🛑 END"]
-    C --> D["⌨️ Generator"]
-    D --> E["⚙️ Executor"]
-    E -->|"Success"| F["📊 Insight"]
+    A["📂 Upload Dataset"] --> B["📋 Profiler"]
+    B -->|"Data profiled"| C["🗺️ Planner"]
+    B -->|"Error loading"| Z["🛑 Abort / END"]
+    C --> D["💻 Generator"]
+    D --> E["⚡ E2B Executor"]
+    E -->|"Success"| F["🧠 Insight Engine"]
     E -->|"Error (retry ≤ 3)"| D
-    F --> G["✅ Results"]
+    F --> G["📊 Interactive Visuals & Report"]
 ```
 
-| Stage | Node | What It Does |
-|-------|------|--------------|
-| **1** | 🕵️ **Profiler** | Loads the CSV, extracts schema, generates a statistical summary |
-| **2** | 🧠 **Planner** | Creates a multi-step analysis plan covering distributions, comparisons, correlations |
-| **3** | ⌨️ **Generator** | Writes Python code (Pandas + Matplotlib + Seaborn) to execute the plan |
-| **4** | ⚙️ **Executor** | Runs code in a secure sandbox, captures stdout and saves charts to `data/output/` |
-| **5** | 📊 **Insight** | Summarizes all findings in plain English for non-technical audiences |
-
-> 🔄 **Self-Correcting**: If code execution fails, the agent reflects on the error and regenerates fixed code — up to 3 attempts.
+| Step | Node | Responsibility |
+|:---|:---|:---|
+| **1** | 📋 **Profiler** | Loads data, handles encodings, extracts schema, and builds statistical context |
+| **2** | 🗺️ **Planner** | Creates a 5-step analytical plan (distributions, correlations, trends, group-by, rankings) |
+| **3** | 💻 **Generator** | Synthesizes Pandas + Plotly code with column normalization |
+| **4** | ⚡ **Executor** | Runs code in remote E2B Sandbox, captures stdout and saves `output_*.json` charts |
+| **5** | 🧠 **Insight** | Delivers plain-English business takeaways and summaries based on execution results |
 
 ---
 
@@ -139,17 +133,16 @@ graph LR
 
 <div align="center">
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **LLM** | Llama 3.3 70B (via Groq) | Reasoning, planning, code generation |
-| **Agent Framework** | LangGraph | Stateful graph orchestration with conditional edges |
-| **Observability** | LangSmith | End-to-end agent tracing & debugging |
-| **Backend API** | FastAPI + Uvicorn | REST API for upload, analysis, and chart serving |
-| **Frontend** | Streamlit | Interactive web UI with drag-and-drop uploads |
-| **Data Science** | Pandas, NumPy, Matplotlib, Seaborn | Data manipulation and visualization |
-| **Structured Output** | Pydantic + LangChain JsonOutputParser | Type-safe LLM responses |
-| **Embeddings** | HuggingFace (all-MiniLM-L6-v2) | Sentence embeddings via HuggingFace API |
-| **Deployment** | Docker + Supervisord | Production-ready containerization |
+| Component | Technology | Role |
+|:---|:---|:---|
+| **LLM Inference** | Groq (`openai/gpt-oss-120b` / `llama-3.3-70b`) | Planning, Code Synthesis, Business Insights |
+| **Agent Orchestration** | LangGraph & LangChain | Stateful cyclic graph pipeline with retries |
+| **Execution Sandbox** | E2B Code Interpreter v2 | Cloud-isolated Python sandbox execution |
+| **Backend REST API** | FastAPI + Uvicorn | Asynchronous job dispatch and asset serving |
+| **Frontend UI** | Streamlit 1.60+ | Glassmorphism dashboard, Plotly interactive viewer |
+| **Visualizations** | Plotly Express & Plotly.js | Dynamic, interactive charts |
+| **Document Processing** | Pandas, NumPy, PDFPlumber | Tabular parsing & PDF table extraction |
+| **Deployment** | Docker & Supervisord | Multi-process container packaging |
 
 </div>
 
@@ -158,39 +151,39 @@ graph LR
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 - **Python 3.11+**
-- **Groq API Key** — [Get one free at groq.com](https://console.groq.com/keys)
-- **HuggingFace API Key** — [Get one free at huggingface.co](https://huggingface.co/settings/tokens)
-- *(Optional)* **LangSmith API Key** — [Get one at smith.langchain.com](https://smith.langchain.com) for agent tracing
+- **Groq API Key** — [Get free key at console.groq.com](https://console.groq.com/keys)
+- **E2B API Key** — [Get free key at e2b.dev](https://e2b.dev)
 
 ### 1️⃣ Clone the Repository
-
 ```bash
 git clone https://github.com/prvn-kumar01/Agentic-Data-Analyst.git
 cd Agentic-Data-Analyst
 ```
 
 ### 2️⃣ Set Up Environment Variables
-
-Create a `.env` file in the project root:
-
+Create a `.env` file in the root directory:
 ```env
-GROQ_API_KEY=your_groq_api_key_here
-HUGGINGFACEHUB_API_TOKEN=your_huggingface_api_token_here
+GROQ_API_KEY=gsk_your_groq_api_key_here
+E2B_API_KEY=e2b_your_e2b_api_key_here
 
-# Optional: Enable LangSmith Tracing
+# Optional: Override default Groq model
+GROQ_MODEL=openai/gpt-oss-120b
+
+# Optional: HuggingFace Embeddings
+HUGGINGFACEHUB_API_TOKEN=your_token_here
+
+# Optional: LangSmith Agent Tracing
 LANGCHAIN_TRACING_V2=true
-LANGCHAIN_API_KEY=your_langsmith_api_key_here
+LANGCHAIN_API_KEY=your_langsmith_key_here
 ```
 
 ### 3️⃣ Install Dependencies
-
 ```bash
-# Create virtual environment (recommended)
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate   # Linux/Mac
-venv\Scripts\activate      # Windows
+venv\Scripts\activate     # Windows
+source venv/bin/activate  # macOS / Linux
 
 # Install dependencies
 pip install -r requirements.txt
@@ -198,112 +191,81 @@ pip install -r requirements.txt
 
 ### 4️⃣ Run the Application
 
-**Option A — Full-Stack (Streamlit + FastAPI):**
-
+**Option A — Web Application (FastAPI + Streamlit):**
 ```bash
-# Terminal 1: Start the FastAPI backend
+# Terminal 1: Start FastAPI backend server
 python server.py
 
-# Terminal 2: Start the Streamlit frontend
+# Terminal 2: Start Streamlit frontend
 streamlit run streamlit_app.py
 ```
+Open **http://localhost:8501** in your browser.
 
-Then open **http://localhost:8501** in your browser.
-
-**Option B — CLI Mode (No UI):**
-
+**Option B — CLI Interactive Mode:**
 ```bash
 python main.py
 ```
-
-> 📁 All generated charts are saved to `data/output/` directory.
 
 ---
 
 ## 🐳 Docker Deployment
 
-> 🌐 **Live on Render** — [https://agentic-data-analyst-ixxo.onrender.com](https://agentic-data-analyst-ixxo.onrender.com)
-
-Deploy the entire stack with a single command:
+You can run both FastAPI and Streamlit in a single container using Docker Compose:
 
 ```bash
-# Build and run
-docker-compose up --build
+# Build and run with Docker Compose
+docker-compose up --build -d
 
-# Access the app
-open http://localhost:8501
+# Open Streamlit
+http://localhost:8501
 ```
 
-The Docker setup runs **Streamlit + FastAPI** in a single container using **Supervisord** as the process manager:
-- **Streamlit UI** → Port `8501`
-- **FastAPI API** → Port `8000`
+The container uses **Supervisord** to manage:
+- **FastAPI Backend** on Port `8000`
+- **Streamlit Frontend** on Port `8501`
 
 ---
 
-## 📁 Project Structure
-
-```
-Auto-Analyst-AI/
-│
-├── 🐍 Backend (Python)
-│   ├── server.py              # FastAPI REST API server
-│   ├── main.py                # CLI entry point (interactive mode)
-│   ├── config.py              # LLM & embedding configuration (Groq + HuggingFace)
-│   ├── streamlit_app.py       # Streamlit web UI (premium dark theme)
-│   └── src/
-│       ├── graph.py           # LangGraph workflow definition
-│       ├── nodes.py           # 5 agent nodes (profiler → insight)
-│       ├── state.py           # AgentState TypedDict schema
-│       ├── schema.py          # Pydantic models for structured output
-│       ├── prompts.py         # All LLM prompt templates
-│       ├── tools.py           # Sandboxed code execution engine
-│       └── utils.py           # CSV profiling utilities
-│
-├── 📂 Data
-│   └── data/
-│       ├── input/             # Uploaded CSV files
-│       └── output/            # Generated charts (output_1.png, etc.)
-│
-├── 🐳 Deployment
-│   ├── Dockerfile             # Single-stage Python 3.11 build
-│   ├── docker-compose.yml     # One-command deployment
-│   └── supervisord.conf       # Process manager (FastAPI + Streamlit)
-│
-
-├── requirements.txt           # Python dependencies
-├── .env                       # API keys (not committed)
-└── .gitignore                 # Git ignore rules
-```
-
----
-
-## 🔌 API Reference
+## 🔌 REST API Reference
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/upload` | Upload a CSV file, returns data preview with column metadata |
-| `POST` | `/api/analyze` | Run the full agent pipeline, returns insights + chart URLs + code |
-| `GET` | `/api/charts/{filename}` | Serve a generated chart image from `data/output/` |
-| `GET` | `/api/health` | Health check endpoint |
+|:---|:---|:---|
+| `POST` | `/api/upload` | Upload CSV, Excel, or JSON; returns schema & sample preview |
+| `POST` | `/api/upload-pdf` | Extract tables from PDF and convert to CSV dataset |
+| `POST` | `/api/analyze` | Asynchronously executes agent pipeline in isolated `job_id` |
+| `GET` | `/api/charts/{job_id}/{filename}` | Serves Plotly JSON or image chart for a specific job |
+| `GET` | `/api/download-report/{job_id}` | Downloads complete ZIP bundle (`report.md`, charts, script) |
+| `GET` | `/api/health` | Healthcheck and server status |
 
-> 📖 **Interactive API Docs**: Visit `http://localhost:8000/docs` for Swagger UI when the server is running.
+> 📖 **Interactive Swagger UI**: Visit `http://localhost:8000/docs` while the server is running.
 
 <details>
-<summary><strong>📋 Example: Analyze Endpoint Response</strong></summary>
+<summary><strong>📋 Example: /api/analyze Response</strong></summary>
 
 ```json
 {
   "success": true,
-  "insight": "Based on the analysis, the top 5 products by revenue are...",
-  "charts": ["/api/charts/output_1.png", "/api/charts/output_2.png"],
-  "code": "df = pd.read_csv('data/input/sales.csv')...",
-  "code_output": "Total Revenue: $1,234,567\nTop Product: Widget A",
-  "plan": ["Load data", "Group by product", "Calculate revenue", "Plot top 10"],
+  "job_id": "8c869d3862",
+  "insight": "1. Glucose and BMI show the strongest positive correlation with diabetes outcome...\n2. Distribution indicates high insulin variance.",
+  "charts": [
+    "/api/charts/8c869d3862/output_1.json",
+    "/api/charts/8c869d3862/output_2.json",
+    "/api/charts/8c869d3862/output_3.json",
+    "/api/charts/8c869d3862/output_4.json"
+  ],
+  "code": "df = pd.read_csv(csv_file_path)\nfig = px.histogram(df, x='glucose')...",
+  "code_output": "Dataset Shape: (768, 9)\nMean Glucose: 120.89",
+  "plan": [
+    "Load data and verify schema",
+    "Compute descriptive statistics",
+    "Plot distributions and correlation heatmap",
+    "Analyze target outcomes by risk factors"
+  ],
   "node_log": [
     {"node": "profiler", "status": "completed"},
-    {"node": "planner", "status": "completed", "plan": ["..."]},
-    {"node": "generator", "status": "completed", "code_length": 1250},
-    {"node": "executor", "status": "completed", "output": "..."},
+    {"node": "planner", "status": "completed"},
+    {"node": "generator", "status": "completed", "code_length": 2980},
+    {"node": "executor", "status": "completed"},
     {"node": "insight", "status": "completed"}
   ]
 }
@@ -312,70 +274,21 @@ Auto-Analyst-AI/
 
 ---
 
-## 🧩 How the Agent Thinks
+## 🔒 Cloud Sandbox Security
 
-Here's what happens under the hood when you ask *"What are the sales trends by region?"*:
-
-```
-1. 🕵️ PROFILER
-   → Reads CSV, detects 12 columns, 50,000 rows
-   → Identifies: Region (categorical), Sales (numeric), Date (datetime)
-
-2. 🧠 PLANNER  (temperature=0.2 — creative reasoning)
-   → Step 1: Load and clean data
-   → Step 2: Group by Region, calculate total sales
-   → Step 3: Plot time-series trends per region
-   → Step 4: Create a heatmap of region × month
-   → Step 5: Show top/bottom performing regions
-
-3. ⌨️ GENERATOR  (temperature=0 — deterministic coding)
-   → Writes ~80 lines of Pandas + Matplotlib code
-   → Creates 4 subplots with seaborn styling
-
-4. ⚙️ EXECUTOR
-   → Runs code in sandbox → Saves 4 charts to data/output/ + captures stats
-
-5. 📊 INSIGHT
-   → "The Western region leads with $2.3M in total sales,
-      showing a 15% growth trend. The Southern region
-      underperforms with declining Q3 numbers..."
-```
-
----
-
-## 🔒 Security
-
-The code execution engine includes multiple layers of protection:
-
-- ✅ **Restricted Builtins** — Only safe Python builtins are available
-- ✅ **Import Stripping** — All import statements are removed; libraries are pre-injected
-- ✅ **Pattern Blocking** — `subprocess`, `shutil`, `importlib`, `__import__` are blocked
-- ✅ **Isolated Scope** — Code runs in a separate namespace, not the main process
-- ✅ **Output Capture** — Stdout is redirected and captured safely
-
----
-
-## 📡 Observability with LangSmith
-
-Auto-Analyst AI supports **LangSmith tracing** out of the box for full agent observability:
-
-- 🔍 **End-to-end trace** of every LLM call across all 5 pipeline nodes
-- 📊 **Token usage** and latency metrics per node
-- 🐛 **Debug failed runs** by inspecting exact prompts and responses
-- 📈 **Monitor production** performance over time
-
-Enable tracing by setting `LANGCHAIN_TRACING_V2=true` and providing your `LANGCHAIN_API_KEY` in the `.env` file.
+Code generated by the LLM is executed inside **E2B isolated cloud micro-VMs**:
+- 🛡️ **Zero Host Access**: Host machine filesystem and network are never exposed to generated code.
+- ⏱️ **Execution Timeouts**: Automatically terminates runaway loops or hung processes.
+- 📁 **Per-Job Storage**: Dynamic session isolation ensures multi-user data confidentiality.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how to get started:
-
 1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Commit** your changes: `git commit -m 'Add amazing feature'`
-4. **Push** to the branch: `git push origin feature/amazing-feature`
+2. **Create** a feature branch (`git checkout -b feature/cool-feature`)
+3. **Commit** your changes (`git commit -m 'Add cool feature'`)
+4. **Push** to the branch (`git push origin feature/cool-feature`)
 5. **Open** a Pull Request
 
 ---
@@ -396,6 +309,6 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-*If you found this project useful, please consider giving it a ⭐!*
+*If you find this project helpful, please consider giving it a ⭐ on GitHub!*
 
 </div>
