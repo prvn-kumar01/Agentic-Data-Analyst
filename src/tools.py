@@ -1,7 +1,7 @@
 """
-Sandboxed Python Code Execution Tool.
-Executes AI-generated code in an isolated process with security guardrails and execution timeouts.
-Supports session-specific chart output directories and multi-chart outputs.
+Sandboxed Python Code Execution Tool using E2B.
+Executes AI-generated code in an isolated cloud process with security guardrails and execution timeouts.
+Supports session-specific chart output directories and multi-chart outputs (Plotly JSON).
 """
 
 import pandas as pd
@@ -17,6 +17,7 @@ import glob
 import traceback
 import subprocess
 import logging
+from e2b_code_interpreter import Sandbox
 
 logger = logging.getLogger("auto_analyst.tools")
 matplotlib.use('Agg')
@@ -28,17 +29,13 @@ _DEFAULT_OUTPUT_DIR = os.path.join(_PROJECT_ROOT, "data", "output")
 
 def _strip_imports(code: str) -> str:
     """
-    Strips import statements from AI-generated code.
-    Libraries (pd, np, plt, sns) are injected into the sandbox.
+    Cleans up any potential interactive display calls that fail in headless sandbox.
+    Keeps imports intact to avoid indentation or module resolution errors.
     """
-    lines = code.split('\n')
-    cleaned_lines = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith('import ') or stripped.startswith('from '):
-            continue
-        cleaned_lines.append(line)
-    return '\n'.join(cleaned_lines)
+    # Disable interactive show calls
+    cleaned = re.sub(r'^\s*plt\.show\(\s*\)', '# plt.show()', code, flags=re.MULTILINE)
+    cleaned = re.sub(r'^\s*fig\.show\(\s*\)', '# fig.show()', cleaned, flags=re.MULTILINE)
+    return cleaned
 
 
 def _cleanup_old_charts(output_dir: str = None):
@@ -46,11 +43,13 @@ def _cleanup_old_charts(output_dir: str = None):
     if output_dir is None:
         output_dir = _DEFAULT_OUTPUT_DIR
     if os.path.exists(output_dir):
-        for f in glob.glob(os.path.join(output_dir, "output*.png")):
-            try:
-                os.remove(f)
-            except OSError:
-                pass
+        patterns = ["output*.png", "output*.json", "output*.html", "output*.svg"]
+        for pattern in patterns:
+            for f in glob.glob(os.path.join(output_dir, pattern)):
+                try:
+                    os.remove(f)
+                except OSError:
+                    pass
 
 
 def _find_generated_charts(output_dir: str = None) -> list:
@@ -59,7 +58,7 @@ def _find_generated_charts(output_dir: str = None) -> list:
         output_dir = _DEFAULT_OUTPUT_DIR
     if not os.path.exists(output_dir):
         return []
-    patterns = ["output.png", "output_*.png"]
+    patterns = ["output.png", "output_*.png", "output.json", "output_*.json", "output.html", "output_*.html"]
     charts = []
     for pattern in patterns:
         charts.extend(glob.glob(os.path.join(output_dir, pattern)))
@@ -68,13 +67,12 @@ def _find_generated_charts(output_dir: str = None) -> list:
     return charts
 
 
-def execute_python_code(code: str, csv_path: str, output_dir: str = None, timeout: int = 30):
+def execute_python_code(code: str, csv_path: str, output_dir: str = None, timeout: int = 60):
     """
-    Executes Python code in an isolated process with:
-    - Security guardrails (blocks dangerous patterns)
-    - Subprocess isolation & 30s Execution Timeout
+    Executes Python code using E2B Sandbox:
+    - Secure Cloud Sandbox Isolation
     - Dynamic Session Output Directory support
-    - Multi-chart capture
+    - Multi-chart capture (Plotly & Matplotlib)
     """
     if output_dir is None:
         output_dir = _DEFAULT_OUTPUT_DIR
@@ -82,26 +80,17 @@ def execute_python_code(code: str, csv_path: str, output_dir: str = None, timeou
     os.makedirs(output_dir, exist_ok=True)
     _cleanup_old_charts(output_dir)
 
-    # 1. SECURITY GUARDRAILS
-    forbidden_patterns = [
-        r'\bsubprocess\b', r'\bshutil\b', 
-        r'\bimportlib\b', r'\b__import__\b',
-        r'\bos\.system\b', r'\bos\.popen\b',
-    ]
-    
-    for pattern in forbidden_patterns:
-        if re.search(pattern, code):
-            logger.warning(f"Forbidden pattern '{pattern}' detected in generated code!")
-            return {
-                "success": False, 
-                "error": f"Security Alert: Forbidden pattern '{pattern}' detected in generated code!"
-            }
-
     abs_csv_path = os.path.abspath(csv_path)
     abs_output_dir = os.path.abspath(output_dir)
 
-    # Prepare script content for isolated subprocess execution
     clean_code = _strip_imports(code)
+    
+    # E2B Sandbox paths (using /tmp/data which is user-writable in E2B Linux environment)
+    filename = os.path.basename(abs_csv_path)
+    sandbox_csv_path = f"/tmp/data/{filename}"
+    sandbox_output_dir = f"/tmp/data/output"
+    
+    # Prepare script content
     script_content = f'''import sys
 import os
 import re
@@ -115,6 +104,14 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+
+try:
+    import polars as pl
+except ImportError:
+    pl = None
 
 try:
     from scipy import stats
@@ -123,70 +120,72 @@ except ImportError:
     stats = None
     scipy = None
 
-csv_file_path = r"{abs_csv_path}"
-OUTPUT_DIR = r"{abs_output_dir}"
+csv_file_path = r"{sandbox_csv_path}"
+OUTPUT_DIR = r"{sandbox_output_dir}"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # User Code Execution
 {clean_code}
 '''
 
-    script_path = os.path.join(abs_output_dir, "_runner_temp.py")
     try:
-        with open(script_path, "w", encoding="utf-8") as f:
-            f.write(script_content)
-
-        # Execute in isolated subprocess with timeout
-        result = subprocess.run(
-            [sys.executable, script_path],
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=abs_output_dir
-        )
-
-        stdout = result.stdout
-        stderr = result.stderr
-
-        # Clean up temporary script
-        if os.path.exists(script_path):
-            os.remove(script_path)
-
-        charts = _find_generated_charts(abs_output_dir)
-
-        if result.returncode == 0:
-            return {
-                "success": True,
-                "output": stdout.strip() if stdout.strip() else "(No text output — check charts)",
-                "image_path": charts[0] if charts else "output.png",
-                "all_charts": charts
-            }
-        else:
-            clean_error = stderr.strip().split("\n")[-1] if stderr.strip() else "Unknown Execution Error"
-            return {
-                "success": False,
-                "error": f"{clean_error}\n\nFull Error Log:\n{stderr.strip()}",
-                "all_charts": charts
-            }
-
-    except subprocess.TimeoutExpired:
-        if os.path.exists(script_path):
+        api_key = os.getenv("E2B_API_KEY")
+        # Initialize E2B Sandbox using modern E2B v2 create method
+        with Sandbox.create(api_key=api_key) as sandbox:
+            # Ensure sandbox directory exists
+            sandbox.commands.run(f"mkdir -p {sandbox_output_dir}")
+            
+            # Upload CSV
+            with open(abs_csv_path, "rb") as f:
+                sandbox.files.write(sandbox_csv_path, f)
+            
+            # Execute code
+            execution = sandbox.run_code(script_content, timeout=timeout)
+            
+            # Fetch generated files from sandbox
             try:
-                os.remove(script_path)
-            except OSError:
-                pass
-        return {
-            "success": False,
-            "error": f"Execution Timed Out! The code took longer than {timeout} seconds to execute.",
-            "all_charts": _find_generated_charts(abs_output_dir)
-        }
+                entries = sandbox.files.list(sandbox_output_dir)
+                for entry in entries:
+                    if entry.name:
+                        try:
+                            file_data = sandbox.files.read(entry.path)
+                            target_local_path = os.path.join(abs_output_dir, entry.name)
+                            if isinstance(file_data, bytes):
+                                with open(target_local_path, "wb") as f:
+                                    f.write(file_data)
+                            else:
+                                with open(target_local_path, "w", encoding="utf-8") as f:
+                                    f.write(file_data)
+                        except Exception as read_e:
+                            logger.warning(f"Could not download {entry.name} from sandbox: {read_e}")
+            except Exception as list_e:
+                logger.warning(f"Could not list sandbox output dir: {list_e}")
+            
+            charts = _find_generated_charts(abs_output_dir)
+            
+            if execution.error:
+                clean_error = execution.error.value
+                tb = execution.error.traceback or ""
+                return {
+                    "success": False,
+                    "error": f"{clean_error}\n\nTraceback:\n{tb}",
+                    "all_charts": charts
+                }
+            else:
+                stdout_text = ""
+                if execution.logs.stdout:
+                    stdout_text = "\n".join(execution.logs.stdout)
+                
+                return {
+                    "success": True,
+                    "output": stdout_text.strip() if stdout_text.strip() else "(No text output — check charts)",
+                    "image_path": charts[0] if charts else "output.json",
+                    "all_charts": charts
+                }
+
     except Exception as e:
-        if os.path.exists(script_path):
-            try:
-                os.remove(script_path)
-            except OSError:
-                pass
         return {
             "success": False,
-            "error": f"Execution Failed: {str(e)}",
+            "error": f"Sandbox Execution Failed: {str(e)}",
             "all_charts": _find_generated_charts(abs_output_dir)
         }

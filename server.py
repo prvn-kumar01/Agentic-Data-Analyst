@@ -80,13 +80,21 @@ async def upload_csv(file: UploadFile = File(...)):
         
         columns_info = []
         for col in df.columns:
+            non_null = int(df[col].notna().sum())
+            unique = int(df[col].nunique())
+            sample_val = "N/A"
+            if not df[col].dropna().empty:
+                sample_val = str(df[col].dropna().iloc[0])
             columns_info.append({
                 "name": str(col),
                 "dtype": str(df[col].dtype),
-                "non_null": int(df[col].notna().sum()),
-                "unique": int(df[col].nunique()),
-                "sample": str(df[col].dropna().iloc[0]) if not df[col].dropna().empty else "N/A"
+                "non_null": non_null,
+                "unique": unique,
+                "sample": sample_val
             })
+        
+        # Replace NaN with empty string for valid JSON serialization
+        preview_records = df.head(8).fillna("").to_dict(orient="records")
         
         return {
             "success": True,
@@ -95,7 +103,7 @@ async def upload_csv(file: UploadFile = File(...)):
             "rows": df.shape[0],
             "cols": df.shape[1],
             "columns": columns_info,
-            "preview": df.head(8).to_dict(orient="records"),
+            "preview": preview_records,
             "column_names": [str(c) for c in df.columns]
         }
     
@@ -142,13 +150,20 @@ async def upload_pdf(file: UploadFile = File(...)):
 
         columns_info = []
         for col in df.columns:
+            non_null = int(df[col].notna().sum())
+            unique = int(df[col].nunique())
+            sample_val = "N/A"
+            if not df[col].dropna().empty:
+                sample_val = str(df[col].dropna().iloc[0])
             columns_info.append({
                 "name": str(col),
                 "dtype": str(df[col].dtype),
-                "non_null": int(df[col].notna().sum()),
-                "unique": int(df[col].nunique()),
-                "sample": str(df[col].dropna().iloc[0]) if not df[col].dropna().empty else "N/A"
+                "non_null": non_null,
+                "unique": unique,
+                "sample": sample_val
             })
+
+        preview_records = df.head(8).fillna("").to_dict(orient="records")
 
         return {
             "success": True,
@@ -158,7 +173,7 @@ async def upload_pdf(file: UploadFile = File(...)):
             "rows": df.shape[0],
             "cols": df.shape[1],
             "columns": columns_info,
-            "preview": df.head(8).to_dict(orient="records"),
+            "preview": preview_records,
             "column_names": [str(c) for c in df.columns]
         }
 
@@ -175,12 +190,14 @@ async def upload_pdf(file: UploadFile = File(...)):
         )
 
 
-def _run_agent_pipeline_sync(initial_state: dict):
+def _run_agent_pipeline_sync(initial_state: dict, thread_id: str):
     """Synchronous worker function to stream the agent pipeline without blocking event loop."""
     final_state = {}
     node_log = []
     
-    for output in agent_app.stream(initial_state):
+    config = {"configurable": {"thread_id": thread_id}}
+    
+    for output in agent_app.stream(initial_state, config=config):
         for node_name, state_update in output.items():
             if state_update is None:
                 continue
@@ -190,9 +207,9 @@ def _run_agent_pipeline_sync(initial_state: dict):
             if state_update.get("plan"):
                 entry["plan"] = state_update["plan"]
             if state_update.get("error"):
-                entry["error"] = state_update["error"][:500]
+                entry["error"] = str(state_update["error"])[:500]
             if state_update.get("code_output"):
-                entry["output"] = state_update["code_output"][:1000]
+                entry["output"] = str(state_update["code_output"])[:1000]
             if state_update.get("python_code"):
                 entry["code_length"] = len(state_update["python_code"])
             node_log.append(entry)
@@ -203,7 +220,8 @@ def _run_agent_pipeline_sync(initial_state: dict):
 @api.post("/api/analyze")
 async def analyze_data(
     filepath: str = Form(...),
-    query: str = Form(...)
+    query: str = Form(...),
+    thread_id: str = Form(None)
 ):
     """Run the full agent pipeline asynchronously in isolated job directory."""
     if not os.path.exists(filepath):
@@ -214,6 +232,9 @@ async def analyze_data(
     
     # Generate unique Job ID for multi-tenant isolation
     job_id = uuid.uuid4().hex[:10]
+    if not thread_id:
+        thread_id = job_id
+        
     job_output_dir = os.path.join(CHART_DIR, job_id)
     os.makedirs(job_output_dir, exist_ok=True)
     
@@ -230,10 +251,14 @@ async def analyze_data(
     
     try:
         # Non-blocking execution via asyncio thread pool
-        final_state, node_log = await asyncio.to_thread(_run_agent_pipeline_sync, initial_state)
+        final_state, node_log = await asyncio.to_thread(_run_agent_pipeline_sync, initial_state, thread_id)
         
-        # Collect charts from session directory
-        charts = sorted(glob.glob(os.path.join(job_output_dir, "output*.png")))
+        # Collect all charts from session directory (Plotly JSON and Matplotlib PNG)
+        json_charts = glob.glob(os.path.join(job_output_dir, "output*.json"))
+        png_charts = glob.glob(os.path.join(job_output_dir, "output*.png"))
+        html_charts = glob.glob(os.path.join(job_output_dir, "output*.html"))
+        charts = sorted(set(json_charts + png_charts + html_charts))
+            
         chart_urls = [f"/api/charts/{job_id}/{os.path.basename(c)}" for c in charts]
         
         # Save analysis summary report into job directory for zip export
@@ -271,39 +296,53 @@ async def analyze_data(
 
 @api.get("/api/charts/{job_id}/{filename}")
 async def get_job_chart(job_id: str, filename: str):
-    """Serve a generated chart image from a specific job directory."""
-    filepath = os.path.join(CHART_DIR, job_id, filename)
+    """Serve a generated chart from a specific job directory."""
+    # Sanitize filenames to prevent directory traversal
+    clean_job_id = os.path.basename(job_id)
+    clean_filename = os.path.basename(filename)
+    filepath = os.path.join(CHART_DIR, clean_job_id, clean_filename)
+    
     if os.path.exists(filepath):
+        if clean_filename.endswith(".json"):
+            return FileResponse(filepath, media_type="application/json")
+        elif clean_filename.endswith(".html"):
+            return FileResponse(filepath, media_type="text/html")
+        elif clean_filename.endswith(".svg"):
+            return FileResponse(filepath, media_type="image/svg+xml")
         return FileResponse(filepath, media_type="image/png")
     return JSONResponse(
         status_code=404,
-        content={"error": f"Chart not found for job '{job_id}': {filename}"}
+        content={"error": f"Chart not found for job '{clean_job_id}': {clean_filename}"}
     )
 
 
 @api.get("/api/charts/{filename}")
 async def get_legacy_chart(filename: str):
     """Fallback route for legacy chart requests."""
-    filepath = os.path.join(CHART_DIR, filename)
+    clean_filename = os.path.basename(filename)
+    filepath = os.path.join(CHART_DIR, clean_filename)
     if os.path.exists(filepath):
+        if clean_filename.endswith(".json"):
+            return FileResponse(filepath, media_type="application/json")
         return FileResponse(filepath, media_type="image/png")
     return JSONResponse(
         status_code=404,
-        content={"error": f"Chart not found: {filename}"}
+        content={"error": f"Chart not found: {clean_filename}"}
     )
 
 
 @api.get("/api/download-report/{job_id}")
 async def download_report_zip(job_id: str):
     """Package job charts, code, and report into a downloadable ZIP archive."""
-    job_output_dir = os.path.join(CHART_DIR, job_id)
+    clean_job_id = os.path.basename(job_id)
+    job_output_dir = os.path.join(CHART_DIR, clean_job_id)
     if not os.path.exists(job_output_dir):
         return JSONResponse(
             status_code=404,
-            content={"error": f"Job directory for '{job_id}' not found."}
+            content={"error": f"Job directory for '{clean_job_id}' not found."}
         )
 
-    zip_filename = f"AutoAnalyst_Report_{job_id}.zip"
+    zip_filename = f"AutoAnalyst_Report_{clean_job_id}.zip"
     zip_path = os.path.join(CHART_DIR, zip_filename)
 
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:

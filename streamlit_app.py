@@ -921,8 +921,7 @@ section[data-testid="stSidebar"] [data-testid="stSidebarCollapsedControl"] {
 """, unsafe_allow_html=True)
 
 # ── JavaScript: Force sidebar + Theme switching ──
-import streamlit.components.v1 as components
-components.html("""
+st.html("""
 <script>
 (function() {
     const doc = window.parent.document;
@@ -987,7 +986,7 @@ components.html("""
     observer.observe(doc.body, { childList: true, subtree: true, attributes: true });
 })();
 </script>
-""", height=0)
+""")
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1001,12 +1000,15 @@ if "node_log" not in st.session_state:
     st.session_state.node_log = []
 if "is_loading" not in st.session_state:
     st.session_state.is_loading = False
-if "query_input" not in st.session_state:
-    st.session_state.query_input = ""
+if "query_text" not in st.session_state:
+    st.session_state.query_text = ""
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "theme" not in st.session_state:
     st.session_state.theme = "dark"
+if "thread_id" not in st.session_state:
+    import uuid
+    st.session_state.thread_id = uuid.uuid4().hex[:10]
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1071,11 +1073,9 @@ with st.sidebar:
 
     # ── Theme Toggle ──
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-    import streamlit.components.v1 as comp_sidebar
-    comp_sidebar.html("""
+    st.html("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-    body { margin: 0; padding: 0; background: transparent !important; }
     .theme-btn {
         display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         width: 100%; padding: 0.55rem 0.8rem; box-sizing: border-box;
@@ -1104,7 +1104,7 @@ with st.sidebar:
     }
     updateBtn();
     </script>
-    """, height=42)
+    """)
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
     # ── File Uploader (Single unified uploader) ──
@@ -1344,14 +1344,14 @@ else:
     for i, prompt in enumerate(quick_prompts):
         with chip_cols[i]:
             if st.button(prompt, key=f"chip_{i}", use_container_width=True):
-                st.session_state.query_input = prompt
+                st.session_state.query_text = prompt
+                st.rerun()
 
     # Query input
     col_input, col_btn = st.columns([5, 1])
     with col_input:
         query = st.text_input(
             "Query",
-            value=st.session_state.query_input,
             placeholder="e.g., What are the top selling products by region?",
             label_visibility="collapsed",
             key="query_text"
@@ -1405,6 +1405,7 @@ else:
                     form_data = {
                         "filepath": st.session_state.file_data["filepath"],
                         "query": query,
+                        "thread_id": st.session_state.thread_id
                     }
                     resp = requests.post(f"{API_BASE}/api/analyze", data=form_data, timeout=300)
                     result = resp.json()
@@ -1495,17 +1496,27 @@ else:
             for idx, chart_url in enumerate(result["charts"]):
                 with chart_cols[idx % 2]:
                     full_url = f"{API_BASE}{chart_url}"
-                    chart_name = os.path.basename(chart_url).replace(".png", "").replace("_", " ").title()
+                    chart_name = os.path.basename(chart_url).replace(".png", "").replace(".json", "").replace("_", " ").title()
                     st.markdown(f'<div class="chart-card">', unsafe_allow_html=True)
                     try:
-                        # Fetch chart image with error handling
-                        chart_resp = requests.get(full_url, timeout=10)
+                        # Fetch chart data with error handling
+                        chart_resp = requests.get(full_url, timeout=15)
                         if chart_resp.status_code == 200:
-                            st.image(chart_resp.content, use_container_width=True)
+                            if full_url.endswith(".json"):
+                                import plotly.io as pio
+                                fig = pio.from_json(chart_resp.text)
+                                st.plotly_chart(fig, use_container_width=True)
+                            elif full_url.endswith(".html"):
+                                import streamlit.components.v1 as chart_comp
+                                chart_comp.html(chart_resp.text, height=450, scrolling=True)
+                            elif full_url.endswith((".png", ".jpg", ".jpeg", ".webp")):
+                                st.image(chart_resp.content, use_container_width=True)
+                            else:
+                                st.info(f"Generated chart file: {chart_name}")
                         else:
                             st.warning(f"Chart not found: {chart_name}")
                     except Exception as chart_err:
-                        st.warning(f"Could not load chart: {chart_name}")
+                        st.warning(f"Could not load chart '{chart_name}': {str(chart_err)[:80]}")
                     st.markdown(f'<div class="chart-label">📊 {chart_name}</div>', unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
 

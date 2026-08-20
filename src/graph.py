@@ -71,5 +71,20 @@ workflow.add_conditional_edges(
 # Final → END
 workflow.add_edge("insight", END) 
 
-# Compile
-app = workflow.compile()
+# Checkpointer initialization with fallback
+try:
+    from langgraph.checkpoint.sqlite import SqliteSaver
+    import sqlite3
+    conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
+    memory = SqliteSaver(conn)
+except Exception:
+    try:
+        from langgraph_checkpoint_sqlite import SqliteSaver
+        import sqlite3
+        conn = sqlite3.connect("checkpoints.sqlite", check_same_thread=False)
+        memory = SqliteSaver(conn)
+    except Exception:
+        from langgraph.checkpoint.memory import MemorySaver
+        memory = MemorySaver()
+
+app = workflow.compile(checkpointer=memory)

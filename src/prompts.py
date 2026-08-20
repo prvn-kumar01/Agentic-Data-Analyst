@@ -45,34 +45,30 @@ ERROR HISTORY:
 CRITICAL RULES:
 1. Use ONLY the columns listed in DATA SCHEMA.
 2. DO NOT hallucinate column names — check the schema carefully.
-3. Load data: df = pd.read_csv("{csv_path}")
-4. IMMEDIATELY after loading, clean columns: df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
-5. For NUMERIC operations (correlation, mean, std, etc.), ALWAYS filter first:
-   numeric_df = df.select_dtypes(include='number')
-   NEVER call .corr() or .mean() on string/object columns.
-6. For CATEGORICAL columns (object/string dtype), use value_counts(), groupby(), countplot, etc.
-7. Do NOT use import statements — the following are pre-loaded: pd (pandas), np (numpy), plt (matplotlib.pyplot), sns (seaborn), os, re, math, datetime, collections, warnings, stats (scipy.stats), scipy.
-   Use 'stats' directly for scipy.stats functions (e.g., stats.zscore(), stats.pearsonr()).
+3. Load data: `df = pd.read_csv(csv_file_path)` (The variable `csv_file_path` is pre-defined with the exact sandbox path).
+4. IMMEDIATELY after loading, normalize column names to match schema:
+   `df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_').str.replace(r'[^a-zA-Z0-9_]', '', regex=True)`
+5. For NUMERIC operations, ALWAYS filter or convert first. NEVER call numeric aggregations on string columns.
+6. For CATEGORICAL columns, use groupby, value_counts, etc.
+7. The following libraries are already pre-loaded: pd (pandas), pl (polars), np (numpy), plt (matplotlib.pyplot), sns (seaborn), px (plotly.express), go (plotly.graph_objects), pio (plotly.io), os, re, math, datetime, collections, warnings, stats, scipy.
 
-CHART GENERATION (CRITICAL — you MUST create charts):
-- A variable OUTPUT_DIR is pre-defined with the absolute path to the output directory. ALWAYS use it.
-- Save charts using: plt.savefig(os.path.join(OUTPUT_DIR, "output_1.png"), dpi=150, bbox_inches='tight')
-- Create 4-5 SEPARATE charts saved as output_1.png, output_2.png, output_3.png, output_4.png, output_5.png inside OUTPUT_DIR.
+CHART GENERATION (CRITICAL — create interactive Plotly charts):
+- A variable `OUTPUT_DIR` is pre-defined with the absolute path to the output directory. ALWAYS use it.
+- Create 3-5 SEPARATE interactive charts using plotly.express (px) or plotly.graph_objects (go).
+- Save Plotly figures as JSON files: `fig.write_json(os.path.join(OUTPUT_DIR, "output_1.json"))`.
+- Create files named output_1.json, output_2.json, output_3.json, output_4.json inside OUTPUT_DIR.
 - Example save pattern:
-    fig, ax = plt.subplots(figsize=(10, 6))
-    # ... plot code ...
+    fig = px.bar(df, x="category", y="value", title="Bar Chart")
+    fig.write_json(os.path.join(OUTPUT_DIR, "output_1.json"))
+- If creating a matplotlib/seaborn chart, save with:
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "output_1.png"), dpi=150, bbox_inches='tight')
+    plt.savefig(os.path.join(OUTPUT_DIR, "output_1.png"), bbox_inches="tight", dpi=150)
     plt.close()
-- NEVER use hardcoded paths like "data/output/output_1.png". ALWAYS use os.path.join(OUTPUT_DIR, "output_N.png").
-- Each chart should have a clear title, axis labels, and use different colors/palettes.
-- Use plt.tight_layout() BEFORE saving.
-- ALWAYS call plt.close() after saving EACH figure to free memory.
-- Make charts visually appealing: use sns color palettes, add grid, use proper font sizes.
-- NEVER call plt.show() — it will cause errors. Only use plt.savefig().
+- NEVER call `fig.show()` or `plt.show()` — it will cause errors in the headless environment.
+- Make charts visually appealing: add informative titles and clear axis labels.
 
 OUTPUT:
-- Print summary statistics and key insights using print().
+- Print summary statistics and key insights using `print()`.
 - Print the results of each analysis step clearly.
 
 {format_instructions}
@@ -87,7 +83,7 @@ USER QUERY: "{query}"
 ANALYSIS RESULT (From Code Execution):
 {code_output}
 
-NOTE: Multiple charts have been generated (data/output/output_1.png through data/output/output_5.png).
+NOTE: Multiple charts have been generated (output_1.json through output_5.json).
 
 YOUR TASK:
 1. Summarize ALL findings based on the code output in clear, simple language.

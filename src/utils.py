@@ -14,13 +14,20 @@ def get_csv_summary(file_path: str):
     Instead of sending the whole file, we send the Structure + Sample.
     """
     try:
-        # 1. Load Data
-        df = pd.read_csv(file_path)
+        # 1. Load Data with encoding fallbacks
+        try:
+            df = pd.read_csv(file_path)
+        except UnicodeDecodeError:
+            try:
+                df = pd.read_csv(file_path, encoding="latin-1")
+            except Exception:
+                df = pd.read_csv(file_path, encoding_errors="replace")
+        
         df = clean_column_names(df)
         
         # 2. Extract Key Info
         rows, cols = df.shape
-        columns = list(df.columns)
+        columns = [str(c) for c in df.columns]
         missing = df.isnull().sum().to_dict()
         types = df.dtypes.astype(str).to_dict()
         
@@ -38,7 +45,7 @@ def get_csv_summary(file_path: str):
         """
         
         for col in columns:
-            summary_text += f"\n- {col}: {types[col]} | {missing[col]} missing"
+            summary_text += f"\n- {col}: {types.get(col, 'unknown')} | {missing.get(col, 0)} missing"
             
         summary_text += f"\n\nSAMPLE DATA (Top 5 Rows):\n{sample_data}"
         

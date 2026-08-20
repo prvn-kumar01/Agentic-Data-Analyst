@@ -28,3 +28,7 @@ python-multipart           # File upload support for FastAPI
 python-dotenv              # .env file loading
 pydantic                   # Structured Output Parsing
 requests                   # HTTP requests (Streamlit → FastAPI)
+e2b-code-interpreter
+plotly
+polars
+langgraph-checkpoint-sqlite

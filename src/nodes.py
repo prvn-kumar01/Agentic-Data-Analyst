@@ -93,7 +93,7 @@ def generator_node(state: AgentState):
 
     prompt = PromptTemplate(
         template=CODER_PROMPT,
-        input_variables=["data_summary", "plan", "csv_path", "error_context"],
+        input_variables=["data_summary", "plan", "error_context"],
         partial_variables={"format_instructions": parser.get_format_instructions()}
     )
     
@@ -108,7 +108,6 @@ def generator_node(state: AgentState):
         code_result = chain.invoke({
             "data_summary": state.get("dataset_summary", "No summary available"),
             "plan": "\n".join(plan),
-            "csv_path": state["csv_file_path"],
             "error_context": error_context 
         })
         
@@ -123,7 +122,10 @@ def generator_node(state: AgentState):
         
     except Exception as e:
         print(f"[ERROR] Code Generation Failed: {e}")
-        return {"error": f"Code Generation Failed: {str(e)}"}
+        return {
+            "error": f"Code Generation Failed: {str(e)}",
+            "revision_count": state.get("revision_count", 0) + 1
+        }
 
 
 # NODE 4: EXECUTOR — Runs Code in Sandbox

@@ -15,6 +15,8 @@ Usage:
 
 import os
 import sys
+import uuid
+import glob
 from src.graph import app
 
 
@@ -35,7 +37,7 @@ def print_banner():
 ║   💬 Ask me anything about your data                         ║
 ║   ⚡ I'll write code, run it, and give you answers           ║
 ║                                                              ║
-║   Powered by: LangGraph • Llama 3.3 • Pandas                ║
+║   Powered by: LangGraph • Groq • Pandas                      ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -64,10 +66,9 @@ def print_result(final_state: dict):
         else:
             print("\n⚠️ No insights were generated.")
     
-    # Show Image Paths
-    import glob
+    # Show Image / Chart Paths
     chart_dir = os.path.join("data", "output")
-    charts = sorted(glob.glob(os.path.join(chart_dir, "output*.png")))
+    charts = sorted(glob.glob(os.path.join(chart_dir, "output*.json")) + glob.glob(os.path.join(chart_dir, "output*.png")))
     if charts:
         print(f"\n📈 Charts saved in: {os.path.abspath(chart_dir)}")
         for chart in charts:
@@ -115,6 +116,10 @@ def run_agent():
         print(f"✅ File loaded: {os.path.basename(csv_path)}")
         break
     
+    # Session thread ID for LangGraph checkpointer
+    thread_id = uuid.uuid4().hex[:10]
+    config = {"configurable": {"thread_id": thread_id}}
+
     # Step 2: Query Loop (multiple questions on same dataset)
     while True:
         print_separator()
@@ -149,7 +154,7 @@ def run_agent():
         try:
             # Stream execution — show progress in real-time
             final_state = {}
-            for output in app.stream(initial_state):
+            for output in app.stream(initial_state, config=config):
                 for node_name, state_update in output.items():
                     print(f"\n  ✅ Completed: {node_name}")
                     

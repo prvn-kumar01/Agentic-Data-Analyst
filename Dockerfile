@@ -1,6 +1,4 @@
-# ============================================
-# Auto-Analyst AI — Streamlit + FastAPI
-# ============================================
+
 FROM python:3.11-slim
 
 # Install supervisor, bash, curl
