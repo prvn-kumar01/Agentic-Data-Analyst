@@ -994,6 +994,8 @@ st.html("""
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 if "file_data" not in st.session_state:
     st.session_state.file_data = None
+if "last_uploaded_key" not in st.session_state:
+    st.session_state.last_uploaded_key = None
 if "result" not in st.session_state:
     st.session_state.result = None
 if "node_log" not in st.session_state:
@@ -1067,7 +1069,7 @@ with st.sidebar:
     <div class="sidebar-logo">
         <div class="logo-icon">🤖</div>
         <div class="logo-text">Auto-Analyst AI</div>
-        <div class="logo-sub">Powered by LangGraph • Llama 3.3</div>
+        <div class="logo-sub">Powered by LangGraph • GPT OSS 120B</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1118,13 +1120,8 @@ with st.sidebar:
     )
 
     if uploaded_file is not None:
-        # Determine if this is a new file
-        prev = st.session_state.file_data
-        is_new_file = (
-            prev is None
-            or (prev.get("filename") != uploaded_file.name
-                and prev.get("original_pdf") != uploaded_file.name)
-        )
+        current_file_key = f"{uploaded_file.name}_{uploaded_file.size}"
+        is_new_file = (st.session_state.last_uploaded_key != current_file_key) or (st.session_state.file_data is None)
 
         if is_new_file:
             file_ext = uploaded_file.name.rsplit(".", 1)[-1].lower() if "." in uploaded_file.name else ""
@@ -1139,6 +1136,7 @@ with st.sidebar:
 
                         if data.get("success"):
                             st.session_state.file_data = data
+                            st.session_state.last_uploaded_key = current_file_key
                             st.session_state.result = None
                             st.session_state.node_log = []
                             st.session_state.chat_history = []
@@ -1167,6 +1165,7 @@ with st.sidebar:
 
                         if data.get("success"):
                             st.session_state.file_data = data
+                            st.session_state.last_uploaded_key = current_file_key
                             st.session_state.result = None
                             st.session_state.node_log = []
                             st.session_state.chat_history = []
@@ -1177,6 +1176,14 @@ with st.sidebar:
                         st.error("❌ Cannot connect to API server. Make sure FastAPI is running on port 8000.")
                     except Exception as e:
                         st.error(f"❌ Upload error: {e}")
+    else:
+        # File cleared
+        if st.session_state.last_uploaded_key is not None:
+            st.session_state.file_data = None
+            st.session_state.last_uploaded_key = None
+            st.session_state.result = None
+            st.session_state.node_log = []
+            st.session_state.chat_history = []
 
     # ── File Info ──
     if st.session_state.file_data:

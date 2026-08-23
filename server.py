@@ -48,16 +48,22 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(CHART_DIR, exist_ok=True)
 
 
+def _natural_sort_key(s: str):
+    """Sort strings with embedded numbers naturally (e.g. output_2 before output_10)."""
+    return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', str(s))]
+
+
 @api.post("/api/upload")
 async def upload_csv(file: UploadFile = File(...)):
     """Upload a CSV/Excel/JSON file, convert to CSV if needed, and return a data preview."""
     try:
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
+        safe_filename = os.path.basename(file.filename)
+        file_path = os.path.join(UPLOAD_DIR, safe_filename)
         with open(file_path, "wb") as f:
             content = await file.read()
             f.write(content)
         
-        ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+        ext = safe_filename.rsplit(".", 1)[-1].lower() if "." in safe_filename else ""
         
         try:
             if ext in ("xlsx", "xls"):
@@ -65,7 +71,13 @@ async def upload_csv(file: UploadFile = File(...)):
             elif ext == "json":
                 df = pd.read_json(file_path)
             else:
-                df = pd.read_csv(file_path)
+                try:
+                    df = pd.read_csv(file_path)
+                except UnicodeDecodeError:
+                    try:
+                        df = pd.read_csv(file_path, encoding="latin-1")
+                    except Exception:
+                        df = pd.read_csv(file_path, encoding_errors="replace")
         except Exception as read_err:
             logger.error(f"Failed to read uploaded file: {read_err}")
             return JSONResponse(
@@ -74,7 +86,7 @@ async def upload_csv(file: UploadFile = File(...)):
             )
         
         if ext in ("xlsx", "xls", "json"):
-            csv_filename = file.filename.rsplit(".", 1)[0] + ".csv"
+            csv_filename = safe_filename.rsplit(".", 1)[0] + ".csv"
             file_path = os.path.join(UPLOAD_DIR, csv_filename)
             df.to_csv(file_path, index=False)
         
@@ -93,15 +105,17 @@ async def upload_csv(file: UploadFile = File(...)):
                 "sample": sample_val
             })
         
-        # Replace NaN with empty string for valid JSON serialization
-        preview_records = df.head(8).fillna("").to_dict(orient="records")
+        # Replace inf and NaN for valid JSON serialization
+        preview_df = df.head(8).replace([float('inf'), float('-inf')], None).fillna("")
+        preview_records = preview_df.to_dict(orient="records")
         
         return {
             "success": True,
             "filename": os.path.basename(file_path),
             "filepath": file_path,
-            "rows": df.shape[0],
-            "cols": df.shape[1],
+            "original_file": safe_filename,
+            "rows": int(df.shape[0]),
+            "cols": int(df.shape[1]),
             "columns": columns_info,
             "preview": preview_records,
             "column_names": [str(c) for c in df.columns]
@@ -121,7 +135,8 @@ async def upload_pdf(file: UploadFile = File(...)):
     try:
         import pdfplumber
 
-        pdf_path = os.path.join(UPLOAD_DIR, file.filename)
+        safe_filename = os.path.basename(file.filename)
+        pdf_path = os.path.join(UPLOAD_DIR, safe_filename)
         with open(pdf_path, "wb") as f:
             content = await file.read()
             f.write(content)
@@ -132,10 +147,28 @@ async def upload_pdf(file: UploadFile = File(...)):
                 tables = page.extract_tables()
                 for table in tables:
                     if table and len(table) > 1:
-                        header = [str(h).strip() if h else f"col_{i}" for i, h in enumerate(table[0])]
-                        rows = table[1:]
-                        tdf = pd.DataFrame(rows, columns=header)
-                        all_tables.append(tdf)
+                        # Find maximum row length to handle ragged rows cleanly
+                        max_len = max(len(r) for r in table if r)
+                        if max_len == 0:
+                            continue
+                        
+                        # Normalize header
+                        raw_header = table[0] or []
+                        header = [str(h).strip() if h is not None and str(h).strip() else f"col_{i+1}" for i, h in enumerate(raw_header)]
+                        while len(header) < max_len:
+                            header.append(f"col_{len(header)+1}")
+                        
+                        # Normalize rows (pad shorter rows with None)
+                        normalized_rows = []
+                        for row in table[1:]:
+                            if row is None:
+                                continue
+                            padded_row = list(row) + [None] * (max_len - len(row))
+                            normalized_rows.append(padded_row[:max_len])
+                        
+                        if normalized_rows:
+                            tdf = pd.DataFrame(normalized_rows, columns=header[:max_len])
+                            all_tables.append(tdf)
 
         if not all_tables:
             return JSONResponse(
@@ -144,7 +177,7 @@ async def upload_pdf(file: UploadFile = File(...)):
             )
 
         df = pd.concat(all_tables, ignore_index=True)
-        csv_filename = file.filename.rsplit(".", 1)[0] + ".csv"
+        csv_filename = safe_filename.rsplit(".", 1)[0] + ".csv"
         csv_path = os.path.join(UPLOAD_DIR, csv_filename)
         df.to_csv(csv_path, index=False)
 
@@ -163,15 +196,17 @@ async def upload_pdf(file: UploadFile = File(...)):
                 "sample": sample_val
             })
 
-        preview_records = df.head(8).fillna("").to_dict(orient="records")
+        preview_df = df.head(8).replace([float('inf'), float('-inf')], None).fillna("")
+        preview_records = preview_df.to_dict(orient="records")
 
         return {
             "success": True,
             "filename": csv_filename,
             "filepath": csv_path,
-            "original_pdf": file.filename,
-            "rows": df.shape[0],
-            "cols": df.shape[1],
+            "original_file": safe_filename,
+            "original_pdf": safe_filename,
+            "rows": int(df.shape[0]),
+            "cols": int(df.shape[1]),
             "columns": columns_info,
             "preview": preview_records,
             "column_names": [str(c) for c in df.columns]
@@ -246,19 +281,27 @@ async def analyze_data(
         "revision_count": 0,
         "messages": [],
         "job_id": job_id,
-        "output_dir": job_output_dir
+        "output_dir": job_output_dir,
+        "error": None,
+        "python_code": None,
+        "code_output": None
     }
     
     try:
         # Non-blocking execution via asyncio thread pool
         final_state, node_log = await asyncio.to_thread(_run_agent_pipeline_sync, initial_state, thread_id)
         
-        # Collect all charts from session directory (Plotly JSON and Matplotlib PNG)
-        json_charts = glob.glob(os.path.join(job_output_dir, "output*.json"))
-        png_charts = glob.glob(os.path.join(job_output_dir, "output*.png"))
-        html_charts = glob.glob(os.path.join(job_output_dir, "output*.html"))
-        charts = sorted(set(json_charts + png_charts + html_charts))
-            
+        # Collect all generated chart files (Plotly JSON, PNG, HTML, SVG)
+        valid_exts = {".png", ".json", ".html", ".svg", ".jpg", ".jpeg"}
+        charts = []
+        for f in os.listdir(job_output_dir):
+            full_path = os.path.join(job_output_dir, f)
+            if os.path.isfile(full_path):
+                _, ext = os.path.splitext(f)
+                if ext.lower() in valid_exts and not f.startswith("report"):
+                    charts.append(full_path)
+                    
+        charts = sorted(set(charts), key=_natural_sort_key)
         chart_urls = [f"/api/charts/{job_id}/{os.path.basename(c)}" for c in charts]
         
         # Save analysis summary report into job directory for zip export

@@ -48,6 +48,13 @@ def print_separator():
     print("\n" + "━" * 60)
 
 
+import re
+
+def _natural_sort_key(s: str):
+    """Sort strings with embedded numbers naturally (e.g. output_2 before output_10)."""
+    return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', str(s))]
+
+
 def print_result(final_state: dict):
     """Displays the final output after graph execution."""
     print_separator()
@@ -67,8 +74,18 @@ def print_result(final_state: dict):
             print("\n⚠️ No insights were generated.")
     
     # Show Image / Chart Paths
-    chart_dir = os.path.join("data", "output")
-    charts = sorted(glob.glob(os.path.join(chart_dir, "output*.json")) + glob.glob(os.path.join(chart_dir, "output*.png")))
+    chart_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "output")
+    valid_exts = {".png", ".json", ".html", ".svg", ".jpg", ".jpeg"}
+    charts = []
+    if os.path.exists(chart_dir):
+        for f in os.listdir(chart_dir):
+            full_p = os.path.join(chart_dir, f)
+            if os.path.isfile(full_p):
+                _, ext = os.path.splitext(f)
+                if ext.lower() in valid_exts and not f.startswith("report"):
+                    charts.append(full_p)
+    charts = sorted(set(charts), key=_natural_sort_key)
+    
     if charts:
         print(f"\n📈 Charts saved in: {os.path.abspath(chart_dir)}")
         for chart in charts:
@@ -119,6 +136,9 @@ def run_agent():
     # Session thread ID for LangGraph checkpointer
     thread_id = uuid.uuid4().hex[:10]
     config = {"configurable": {"thread_id": thread_id}}
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(project_root, "data", "output")
+    os.makedirs(output_dir, exist_ok=True)
 
     # Step 2: Query Loop (multiple questions on same dataset)
     while True:
@@ -145,10 +165,14 @@ def run_agent():
         print_separator()
         
         initial_state = {
-            "csv_file_path": csv_path,
+            "csv_file_path": os.path.abspath(csv_path),
             "user_query": query,
             "revision_count": 0,
-            "messages": []
+            "messages": [],
+            "output_dir": output_dir,
+            "error": None,
+            "python_code": None,
+            "code_output": None
         }
         
         try:

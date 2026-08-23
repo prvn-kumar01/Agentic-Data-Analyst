@@ -2,14 +2,15 @@
 .git
 .gitignore
 
-
-# Python
+# Python virtualenvs & cache
 __pycache__
 *.pyc
 *.pyo
+venv/
 aianalyst/
+checkpoints.sqlite*
 
-# Environment (secrets — pass via env vars at runtime)
+# Environment
 .env
 
 # Data files
@@ -18,11 +19,6 @@ data/
 # IDE
 .vscode
 .idea
-
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
 
 # Misc
 *.md

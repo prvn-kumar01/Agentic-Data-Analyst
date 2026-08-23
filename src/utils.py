@@ -1,11 +1,28 @@
-import pandas as pd
+import re
 import io
+import pandas as pd
 
 def clean_column_names(df):
     """
-    Cleans column names to be Python-friendly (removes spaces, special chars).
+    Cleans column names to be Python-friendly (removes spaces, special chars, handles duplicates).
     """
-    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_').str.replace(r'[^a-zA-Z0-9_]', '', regex=True)
+    new_cols = []
+    seen = {}
+    for i, col in enumerate(df.columns):
+        c_str = str(col).strip().lower().replace(' ', '_')
+        cleaned = re.sub(r'[^a-zA-Z0-9_]', '', c_str)
+        if not cleaned:
+            cleaned = f"col_{i+1}"
+        
+        # Deduplicate
+        if cleaned in seen:
+            seen[cleaned] += 1
+            cleaned = f"{cleaned}_{seen[cleaned]}"
+        else:
+            seen[cleaned] = 0
+        new_cols.append(cleaned)
+        
+    df.columns = new_cols
     return df
 
 def get_csv_summary(file_path: str):

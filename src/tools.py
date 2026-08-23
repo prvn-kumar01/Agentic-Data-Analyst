@@ -27,14 +27,18 @@ _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _DEFAULT_OUTPUT_DIR = os.path.join(_PROJECT_ROOT, "data", "output")
 
 
+def _natural_sort_key(s: str):
+    """Sort strings with embedded numbers naturally (e.g. output_2 before output_10)."""
+    return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', str(s))]
+
+
 def _strip_imports(code: str) -> str:
     """
     Cleans up any potential interactive display calls that fail in headless sandbox.
     Keeps imports intact to avoid indentation or module resolution errors.
     """
-    # Disable interactive show calls
-    cleaned = re.sub(r'^\s*plt\.show\(\s*\)', '# plt.show()', code, flags=re.MULTILINE)
-    cleaned = re.sub(r'^\s*fig\.show\(\s*\)', '# fig.show()', cleaned, flags=re.MULTILINE)
+    # Disable any interactive show calls (e.g. plt.show(), fig.show(), fig1.show(), etc.)
+    cleaned = re.sub(r'^\s*(?:plt|\w+)\.show\(.*?\)', '# show() suppressed in headless sandbox', code, flags=re.MULTILINE)
     return cleaned
 
 
@@ -43,7 +47,7 @@ def _cleanup_old_charts(output_dir: str = None):
     if output_dir is None:
         output_dir = _DEFAULT_OUTPUT_DIR
     if os.path.exists(output_dir):
-        patterns = ["output*.png", "output*.json", "output*.html", "output*.svg"]
+        patterns = ["*.png", "*.json", "*.html", "*.svg", "*.jpg", "*.jpeg"]
         for pattern in patterns:
             for f in glob.glob(os.path.join(output_dir, pattern)):
                 try:
@@ -53,17 +57,23 @@ def _cleanup_old_charts(output_dir: str = None):
 
 
 def _find_generated_charts(output_dir: str = None) -> list:
-    """Find all output chart files generated during execution."""
+    """Find all output chart files generated during execution with natural ordering."""
     if output_dir is None:
         output_dir = _DEFAULT_OUTPUT_DIR
     if not os.path.exists(output_dir):
         return []
-    patterns = ["output.png", "output_*.png", "output.json", "output_*.json", "output.html", "output_*.html"]
+    
+    valid_exts = {".png", ".json", ".html", ".svg", ".jpg", ".jpeg"}
     charts = []
-    for pattern in patterns:
-        charts.extend(glob.glob(os.path.join(output_dir, pattern)))
-    # Dedupe and sort
-    charts = sorted(set(charts))
+    for f in os.listdir(output_dir):
+        full_path = os.path.join(output_dir, f)
+        if os.path.isfile(full_path):
+            _, ext = os.path.splitext(f)
+            if ext.lower() in valid_exts and not f.startswith("report"):
+                charts.append(full_path)
+                
+    # Dedupe and natural sort
+    charts = sorted(set(charts), key=_natural_sort_key)
     return charts
 
 
@@ -135,9 +145,9 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
             # Ensure sandbox directory exists
             sandbox.commands.run(f"mkdir -p {sandbox_output_dir}")
             
-            # Upload CSV
+            # Upload CSV with binary content
             with open(abs_csv_path, "rb") as f:
-                sandbox.files.write(sandbox_csv_path, f)
+                sandbox.files.write(sandbox_csv_path, f.read())
             
             # Execute code
             execution = sandbox.run_code(script_content, timeout=timeout)
@@ -146,18 +156,22 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
             try:
                 entries = sandbox.files.list(sandbox_output_dir)
                 for entry in entries:
-                    if entry.name:
-                        try:
-                            file_data = sandbox.files.read(entry.path)
-                            target_local_path = os.path.join(abs_output_dir, entry.name)
-                            if isinstance(file_data, bytes):
-                                with open(target_local_path, "wb") as f:
-                                    f.write(file_data)
-                            else:
-                                with open(target_local_path, "w", encoding="utf-8") as f:
-                                    f.write(file_data)
-                        except Exception as read_e:
-                            logger.warning(f"Could not download {entry.name} from sandbox: {read_e}")
+                    is_dir = getattr(entry, 'is_dir', False) or getattr(entry, 'type', '') == 'dir'
+                    if is_dir or not getattr(entry, 'name', None):
+                        continue
+                    
+                    entry_path = getattr(entry, 'path', f"{sandbox_output_dir}/{entry.name}")
+                    try:
+                        file_data = sandbox.files.read(entry_path)
+                        target_local_path = os.path.join(abs_output_dir, entry.name)
+                        if isinstance(file_data, bytes):
+                            with open(target_local_path, "wb") as f:
+                                f.write(file_data)
+                        else:
+                            with open(target_local_path, "w", encoding="utf-8") as f:
+                                f.write(str(file_data))
+                    except Exception as read_e:
+                        logger.warning(f"Could not download {entry.name} from sandbox: {read_e}")
             except Exception as list_e:
                 logger.warning(f"Could not list sandbox output dir: {list_e}")
             
