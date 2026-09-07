@@ -32,10 +32,13 @@ api = FastAPI(
     version="2.0.0"
 )
 
-# CORS — Allow Streamlit & Production Frontends
+# CORS — Configurable via ALLOWED_ORIGINS env var (comma-separated)
+_allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+_allowed_origins = [o.strip() for o in _allowed_origins if o.strip()]
+
 api.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

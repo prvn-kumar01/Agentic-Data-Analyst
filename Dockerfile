@@ -1,16 +1,17 @@
 
 FROM python:3.11-slim
 
-# Install supervisor, bash, curl
+# Install supervisor, nginx, bash, curl
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends supervisor curl bash && \
+    apt-get install -y --no-install-recommends \
+        supervisor curl bash nginx && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Install Python dependencies
+# Install Python dependencies (cached layer — only rebuilds when requirements change)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -25,15 +26,20 @@ COPY .streamlit/ ./.streamlit/
 # Create data directories
 RUN mkdir -p data/input data/output
 
+# Copy Nginx config
+COPY nginx.conf /etc/nginx/sites-available/default
+RUN rm -f /etc/nginx/sites-enabled/default && \
+    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
 # Copy supervisor config
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expose FastAPI (internal) — Streamlit uses Render's $PORT
-EXPOSE 8000
+# Expose only port 80 (Nginx handles everything)
+EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
-    CMD curl -f http://localhost:8000/api/health || exit 1
+# Health check via Nginx
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost/api/health || exit 1
 
-# Start both services via supervisord
+# Start all services via supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

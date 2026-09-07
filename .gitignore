@@ -1,5 +1,45 @@
+# ── Environment & Secrets ──
 .env
+.env.local
+.env.production
+
+# ── Python ──
 __pycache__/
 *.pyc
-data/output/*.png
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
 
+# ── Virtual Environment ──
+venv/
+.venv/
+env/
+
+# ── Data & Outputs ──
+data/output/
+data/input/
+*.sqlite
+checkpoints.sqlite
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Docker ──
+docker-compose.override.yml
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Backups ──
+backups/
+
+# ── Logs ──
+*.log
+logs/
